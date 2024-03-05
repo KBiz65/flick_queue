@@ -1,5 +1,5 @@
 {
-  "name": "all_4_mooveez",
+  "name": "flick_queue",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.11",
+    "@reduxjs/toolkit": "^2.2.1",
+    "bcryptjs": "^2.4.3",
+    "next": "14.1.0",
+    "node": "^21.6.2",
+    "pg": "^8.11.3",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.1.0"
+    "react-redux": "^9.1.0"
   },
   "devDependencies": {
     "eslint": "^8",
