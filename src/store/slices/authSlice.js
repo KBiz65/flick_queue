@@ -3,9 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   firstName: '',
   isAuthenticated: false,
-  user: null, // May contain additional user info beyond firstName
-  error: null,
-  watchLists: [], // Array of watchlist objects
+  watchLists: [], // Array of watchlists each with an array of watchListItems
 };
 
 export const authSlice = createSlice({
@@ -16,15 +14,11 @@ export const authSlice = createSlice({
       state.isAuthenticated = true;
       state.firstName = action.payload.firstName; // Assuming firstName is part of the payload
       state.watchLists = action.payload.watchLists; // Assuming watchLists are part of the payload
-      state.user = action.payload; // Assuming payload contains user info
-      state.error = null;
     },
     logoutUser(state) {
       state.isAuthenticated = false;
       state.firstName = '';
       state.watchLists = [];
-      state.user = null;
-      state.error = null;
     },
     setError(state, action) {
       state.error = action.payload;

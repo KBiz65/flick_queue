@@ -1,9 +1,10 @@
-import { pool } from '../../../db/index'; // Adjust path as necessary
+import pool from '../../../db/index'; // Adjust path as necessary
 import { verifyPassword } from '../../../utils/auth-utils'; // Function to compare password with hashed password
-import { sign } from 'jsonwebtoken'; // npm install jsonwebtoken
 import { serialize } from 'cookie'; // npm install cookie
 
 export default async function handler(req, res) {
+    const jwt = require('jsonwebtoken');
+
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
     }
@@ -16,38 +17,36 @@ export default async function handler(req, res) {
     }
 
     try {
-        const client = await pool.connect();
-        const { rows } = await client.query(
-            'SELECT * FROM users WHERE username = $1', 
-            [username]
-        );
+        const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
         if (rows.length === 0) {
-            client.release();
-            return res.status(401).json({ message: 'User not found.' });
         }
 
         const user = rows[0];
         const isValid = await verifyPassword(password, user.password_hash);
 
         if (!isValid) {
-            client.release();
-            return res.status(403).json({ message: 'Incorrect password.' });
+            return res.status(401).json({ message: 'Incorrect password.' });
         }
 
         // Assuming you have a secret key for JWT
-        const token = sign(
-            { email: user.email, username: user.username },
+        const token = jwt.sign(
+            { username: user.username, firstName: user.first_name, lastName: user.last_name, email: user.email },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
         // Set HTTP-only cookie
-        res.setHeader('Set-Cookie', serialize('auth', token, { httpOnly: true, secure: process.env.NODE_ENV !== 'development', sameSite: 'strict', path: '/' }));
+        res.setHeader('Set-Cookie', serialize('FlickQueueAuth', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 3600000 // 1hr
+        }));
 
-        client.release();
-        res.status(200).json({ message: 'Logged in successfully.' });
+        res.status(200).json({ firstName: user.first_name, watchLists: user.watchLists || [{ 'watchList 1': [] }, { 'watchList 2': [] }] });
     } catch (error) {
-        res.status(500).json({ message: 'Something went wrong.' });
+        res.status(500).json({ message: 'Something went wrong.', error: error.message });
     }
 }

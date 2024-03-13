@@ -1,14 +1,9 @@
 import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from '../store/store';
+import { wrapper } from '../store/store'; // Ensure this path matches the location of your store file
 import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
-  return (
-    <Provider store={store}>
-      <Component {...pageProps} />
-    </Provider>
-  );
+  return <Component {...pageProps} />;
 }
 
-export default MyApp;
+export default wrapper.withRedux(MyApp);

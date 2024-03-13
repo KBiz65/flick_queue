@@ -7,8 +7,6 @@ export default async function handler(req, res) {
   }
 
   const { firstname, lastname, email, username, password } = req.body;
-  console.log(firstname, lastname, email, username, password);
-
   // Basic validation
   if (
     !firstname ||	firstname.trim().length === 0 ||
