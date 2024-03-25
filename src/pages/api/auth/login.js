@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
         // Assuming you have a secret key for JWT
         const token = jwt.sign(
-            { username: user.username, firstName: user.first_name, lastName: user.last_name, email: user.email },
+            { userId: user.user_id, username: user.username, firstName: user.first_name, lastName: user.last_name, email: user.email },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );

@@ -37,7 +37,7 @@ export default function Home() {
         isSearchInvalid={isSearchInvalid}
       />
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        <Grid container spacing={3} justifyContent="center" alignItems="center" style={{ minHeight: 'calc(100vh - 64px)' }}>
+        <Grid container spacing={3} justifyContent="center" alignItems="center" style={{ minHeight: 'calc(100vh - 40px)' }}>
           {/* Information Column */}
           <Grid item xs={12} md={6}>
             <Typography variant="h3" component="h1" gutterBottom>
