@@ -4,13 +4,16 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
-import './Navbar.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { performSearch, setSearchItem, setIsSearchInvalid, selectSearchItem, selectIsSearchInvalid } from '../../store/slices/searchSlice';
 
-const Navbar = ({ searchItem, setSearchItem, handleSearch, isSearchInvalid }) => {
+const Navbar = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const router = useRouter();
+    const dispatch = useDispatch();
+    const searchItem = useSelector(selectSearchItem);
+    const isSearchInvalid = useSelector(selectIsSearchInvalid);
 
     const handleProfileMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -21,6 +24,8 @@ const Navbar = ({ searchItem, setSearchItem, handleSearch, isSearchInvalid }) =>
     };
 
     const navigateToHome = () => {
+        dispatch(setSearchItem(''));
+        dispatch(setIsSearchInvalid(false));
         router.push('/home');
         handleClose();
     };
@@ -28,6 +33,32 @@ const Navbar = ({ searchItem, setSearchItem, handleSearch, isSearchInvalid }) =>
     const navigateToProfile = () => {
         router.push('/profile');
         handleClose();
+    };
+
+    const navigateToSearchResults = () => {
+        if (!searchItem) return;
+        router.push('/searchResults');
+    }
+
+    const handleSearch = async () => {
+        try {
+            const actionResult = await dispatch(performSearch(searchItem));
+            const resultData = actionResult.payload;
+
+            console.log('Search result data: ', resultData);
+
+            navigateToSearchResults();
+        } catch (error) {
+            console.error('Search failed: ', error);
+        }
+    };
+
+    const handleSearchChange = (event) => {
+        dispatch(setSearchItem(event.target.value));
+    };
+
+    const clearSearchItem = () => {
+        dispatch(setSearchItem(''));
     };
 
     return (
@@ -52,7 +83,7 @@ const Navbar = ({ searchItem, setSearchItem, handleSearch, isSearchInvalid }) =>
                     size="small"
                     placeholder={isSearchInvalid ? 'Please enter a search term' : 'Search for a movie or TV show'}
                     value={searchItem}
-                    onChange={(e) => setSearchItem(e.target.value)}
+                    onChange={handleSearchChange}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
@@ -64,11 +95,7 @@ const Navbar = ({ searchItem, setSearchItem, handleSearch, isSearchInvalid }) =>
                         endAdornment: (
                             <InputAdornment position="end">
                                 {searchItem && (
-                                    <IconButton
-                                        onClick={() => {
-                                            setSearchItem('');
-                                        }}
-                                    >
+                                    <IconButton onClick={clearSearchItem}>
                                         <ClearIcon sx={{ color: '#ffffff' }} />
                                     </IconButton>
                                 )}
