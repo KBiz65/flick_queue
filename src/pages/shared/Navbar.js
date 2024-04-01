@@ -5,15 +5,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
-import { performSearch, setSearchItem, setIsSearchInvalid, selectSearchItem, selectIsSearchInvalid } from '../../store/slices/searchSlice';
+import { performSearch, setSearchItem, setIsSearchInvalid } from '../../store/slices/searchSlice';
 
 const Navbar = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     const router = useRouter();
     const dispatch = useDispatch();
-    const searchItem = useSelector(selectSearchItem);
-    const isSearchInvalid = useSelector(selectIsSearchInvalid);
+    const searchItem = useSelector((state) => state.search.searchItem);
+    const isSearchInvalid = useSelector((state) => state.search.isSearchInvalid);
+
 
     const handleProfileMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -118,6 +119,10 @@ const Navbar = () => {
                         },
                         '& .MuiInputBase-input': {
                             color: '#ffffff', // Text color
+                            '&:-webkit-autofill': {
+                                WebkitBoxShadow: '0 0 0 100px #080101 inset', // Match the AppBar's bgcolor
+                                WebkitTextFillColor: '#ffffff', // Ensure text color remains white
+                            }
                         },
                         '& .MuiInputBase-input::placeholder': {
                             color: isSearchInvalid ? 'red' : '#ffffff',

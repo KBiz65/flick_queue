@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { setUser, setError } from '../../store/slices/authSlice';
 import { Card, CardContent, CardActions, TextField, Button, Typography, Box } from '@mui/material';
 
-export default function LoginForm({ setIsLoginView }) {
+export default function LoginForm({ setIsLoginView, from }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState('');
@@ -29,7 +29,8 @@ export default function LoginForm({ setIsLoginView }) {
 
             const userData = await response.json();
             dispatch(setUser(userData));
-            router.push('/dashboard'); // Adjust the redirect path as needed
+            if (from) router.push(from) 
+            else router.push('/dashboard');
         } catch (error) {
             console.error('An error occurred during login:', error.message);
             setLoginError('Login failed due to a network error');

@@ -16,24 +16,84 @@ const Profile = () => {
         oldPassword: '',
         allowAdultContent: false,
     });
+    const [formErrors, setFormErrors] = useState({
+        username: '',
+        email: '',
+        firstName: '',
+        lastName: '',
+        newPassword: '',
+        confirmPassword: '',
+        oldPassword: '',
+    });
+    const [updateStatus, setUpdateStatus] = useState({
+        message: '',
+        isError: false,
+    });
 
     useEffect(() => {
         const fetchUserData = async () => {
-            const userResponse = await axios.get('/api/user/getUserData', { withCredentials: true });
-            console.log('userResponse: ', userResponse);
-            setUserData({
-                username: userResponse.data.username,
-                email: userResponse.data.email,
-                firstName: userResponse.data.firstName,
-                lastName: userResponse.data.lastName,
+            try {
+                const userResponse = await axios.get('/api/user/getUserData', { withCredentials: true });
+                console.log('userResponse: ', userResponse);
+                setUserData({
+                    username: userResponse.data.username,
+                    email: userResponse.data.email,
+                    firstName: userResponse.data.firstName,
+                    lastName: userResponse.data.lastName,
+                    newPassword: '',
+                    confirmPassword: '',
+                    oldPassword: '',
+                    allowAdultContent: userResponse.data.allowAdultContent || false,
+                });
+            } catch (error) {
+                if (error.response && error.response.status === 401) {
+                    console.log('User is not authenticated');
+                    router.push({
+                        pathname: '/home',
+                        query: { from: '/profile' },
+                    });
+                } else {
+                    console.log('error: ', error);
+                }
+            }
+        };
+        fetchUserData();
+    }, [router]);
+
+    const updateUserData = async () => {
+        try {
+            const response = await axios.post('/api/user/updateUserData', userData, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const responseData = response.data;
+            const newUserData = {
+                username: responseData.username,
+                email: responseData.email,
+                firstName: responseData.firstName,
+                lastName: responseData.lastName,
                 newPassword: '',
                 confirmPassword: '',
                 oldPassword: '',
-                allowAdultContent: userResponse.data.allowAdultContent || false,
+                allowAdultContent: responseData.allowAdultContent,
+            };
+            setUserData(newUserData);
+            setFormErrors({
+                username: '',
+                email: '',
+                firstName: '',
+                lastName: '',
+                newPassword: '',
+                confirmPassword: '',
+                oldPassword: '',
             });
-        };
-        fetchUserData();
-    }, []);
+            router.push('/profile');
+        } catch (error) {
+            console.log('error: ', error);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -45,12 +105,52 @@ const Profile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (userData.newPassword !== userData.confirmPassword) {
-            alert('Passwords do not match!');
+
+        let errors = {};
+
+        // Validate newPassword and confirmPassword
+        if (userData.newPassword || userData.confirmPassword) {
+            if (userData.newPassword !== userData.confirmPassword) {
+                errors.confirmPassword = 'New passwords do not match';
+            }
+
+            if (!userData.oldPassword) {
+                errors.oldPassword = 'Enter old password to update';
+            }
+        }
+
+        if (!userData.username) errors.username = 'Username cannot be blank';
+        if (!userData.email) errors.email = 'Email cannot be blank';
+        if (!userData.firstName) errors.firstName = 'First name cannot be blank';
+        if (!userData.lastName) errors.lastName = 'Last name cannot be blank';
+
+        // Update the formErrors state
+
+        // If there are any errors, prevent form submission
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            setUpdateStatus({ message: 'Please correct errors before submitting.', isError: true });
+            setTimeout(() => {
+                setUpdateStatus({ message: '', isError: true });
+            }, 5000);
             return;
         }
-        updateUserData(userData); 
-        router.push('/dashboard'); 
+
+        // If no errors, proceed with form submission
+        updateUserData();
+        setUpdateStatus({ message: 'Profile updated successfully.', isError: false });
+        setTimeout(() => {
+            setUpdateStatus({ message: '', isError: false });
+        }, 5000);
+        router.push('/profile');
+    };
+
+    if (!userData.username) {
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <Navbar />
+            </Box>
+        );
     };
 
     return (
@@ -68,9 +168,11 @@ const Profile = () => {
                                     fullWidth
                                     label="Username"
                                     name="username"
-                                    value={userData.username}
-                                    onChange={handleInputChange}
                                     type="text"
+                                    value={userData.username || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.username}
+                                    helperText={formErrors.username}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -78,9 +180,11 @@ const Profile = () => {
                                     fullWidth
                                     label="Email"
                                     name="email"
-                                    value={userData.email}
-                                    onChange={handleInputChange}
                                     type="email"
+                                    value={userData.email || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.email}
+                                    helperText={formErrors.email}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -88,9 +192,11 @@ const Profile = () => {
                                     fullWidth
                                     label="First Name"
                                     name="firstName"
-                                    value={userData.firstName}
-                                    onChange={handleInputChange}
                                     type="text"
+                                    value={userData.firstName || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.firstName}
+                                    helperText={formErrors.firstName}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -98,9 +204,11 @@ const Profile = () => {
                                     fullWidth
                                     label="Last Name"
                                     name="lastName"
-                                    value={userData.lastName}
-                                    onChange={handleInputChange}
                                     type="text"
+                                    value={userData.lastName || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.lastName}
+                                    helperText={formErrors.lastName}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -108,9 +216,11 @@ const Profile = () => {
                                     fullWidth
                                     label="New Password"
                                     name="newPassword"
-                                    value={userData.newPassword}
-                                    onChange={handleInputChange}
                                     type="password"
+                                    value={userData.newPassword || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.newPassword}
+                                    helperText={formErrors.newPassword}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -118,9 +228,11 @@ const Profile = () => {
                                     fullWidth
                                     label="Confirm New Password"
                                     name="confirmPassword"
-                                    value={userData.confirmPassword}
-                                    onChange={handleInputChange}
                                     type="password"
+                                    value={userData.confirmPassword || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.confirmPassword}
+                                    helperText={formErrors.confirmPassword}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -128,16 +240,18 @@ const Profile = () => {
                                     fullWidth
                                     label="Old Password"
                                     name="oldPassword"
-                                    value={userData.oldPassword}
-                                    onChange={handleInputChange}
                                     type="password"
+                                    value={userData.oldPassword || ''}
+                                    onChange={handleInputChange}
+                                    error={!!formErrors.oldPassword}
+                                    helperText={formErrors.oldPassword}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <FormControlLabel
                                     control={
                                         <Switch
-                                            checked={userData.allowAdultContent}
+                                            checked={userData.allowAdultContent || false}
                                             onChange={handleInputChange}
                                             name="allowAdultContent"
                                         />
@@ -150,6 +264,19 @@ const Profile = () => {
                                     Update Profile
                                 </Button>
                             </Grid>
+                            {updateStatus.message && (
+                                <Box
+                                    sx={{
+                                        margin: '20px 0',
+                                        padding: '10px',
+                                        backgroundColor: updateStatus.isError ? 'error.main' : 'success.main',
+                                        color: 'white',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    {updateStatus.message}
+                                </Box>
+                            )}
                         </Grid>
                     </form>
                 </Paper>

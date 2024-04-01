@@ -1,9 +1,9 @@
+import jwt from 'jsonwebtoken';
 import pool from '../../../db/index'; // Adjust path as necessary
 import { verifyPassword } from '../../../utils/auth-utils'; // Function to compare password with hashed password
 import { serialize } from 'cookie'; // npm install cookie
 
-export default async function handler(req, res) {
-    const jwt = require('jsonwebtoken');
+export default async function login(req, res) {
 
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
         const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
         if (rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
         const user = rows[0];

@@ -10,6 +10,9 @@ const nextConfig = {
             { source: '/searchResults', destination: '/searches/allMedia' }
         ];
     },
+    images: {
+        domains: ['image.tmdb.org'],
+    },
 };
 
 export default nextConfig;
