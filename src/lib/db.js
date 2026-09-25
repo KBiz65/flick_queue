@@ -1,17 +1,23 @@
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
-const databaseHost = process.env.DATABASE_HOST;
-const databaseName = process.env.DATABASE_NAME;
-const databaseUser = process.env.DATABASE_USER;
-const databasePassword = process.env.DATABASE_PASSWORD;
-const databasePort = process.env.DATABASE_PORT;
+function createPool() {
+    if (process.env.DATABASE_URL) {
+        return new Pool({ connectionString: process.env.DATABASE_URL });
+    }
 
-const pool = new Pool({
-  host: databaseHost,
-  database: databaseName,
-  user: databaseUser,
-  password: databasePassword,
-  port: databasePort,
-});
+    return new Pool({
+        host: process.env.DATABASE_HOST,
+        database: process.env.DATABASE_NAME,
+        user: process.env.DATABASE_USER,
+        password: process.env.DATABASE_PASSWORD,
+        port: Number(process.env.DATABASE_PORT) || 5432,
+    });
+}
 
-module.exports = pool;
+const pool = globalThis.flickQueuePool ?? createPool();
+
+if (process.env.NODE_ENV !== 'production') {
+    globalThis.flickQueuePool = pool;
+}
+
+export default pool;
