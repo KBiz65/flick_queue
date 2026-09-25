@@ -1,17 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    async rewrites() {
-        return [
-            { source: '/home', destination: '/' },
-            { source: '/login', destination: '/loginAndSignup/login' },
-            { source: '/signup', destination: '/loginAndSignup/signup' },
-            { source: '/dashboard', destination: '/user/dashboard' },
-            { source: '/profile', destination: '/user/profile' },
-            { source: '/searchResults', destination: '/searches/allMedia' }
-        ];
-    },
+    reactStrictMode: true,
+    poweredByHeader: false,
     images: {
-        domains: ['image.tmdb.org'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'image.tmdb.org',
+                pathname: '/t/p/**',
+            },
+        ],
     },
 };
 
