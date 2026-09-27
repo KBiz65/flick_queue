@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'next/router';
+import { setUser } from '../store/slices/authSlice';
+import { getSafeRedirect } from '../lib/redirect';
 import { Card, CardContent, CardActions, TextField, Button, Typography, Box } from '@mui/material';
 
-export default function Signup({ setIsLoginView }) {
+export default function Signup({ setIsLoginView, from }) {
+  const [signupError, setSignupError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent the default form submit action
+    setSignupError('');
+    setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
     const firstname = formData.get('firstname');
@@ -20,16 +31,20 @@ export default function Signup({ setIsLoginView }) {
         body: JSON.stringify({ firstname, lastname, email, username, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        console.error("Signup failed");
-        // You could also update the UI to reflect the error
+        setSignupError(data.message || 'Signup failed');
         return;
       }
 
-      console.log("Signup successful");
-      // Redirect to login page or another appropriate action
-    } catch (error) {
-      console.error("An error occurred during signup:", error);
+      // Signup also logs the user in, so go straight to the app
+      dispatch(setUser(data));
+      router.push(getSafeRedirect(from));
+    } catch {
+      setSignupError('Signup failed due to a network error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -42,7 +57,17 @@ export default function Signup({ setIsLoginView }) {
         alignItems: 'center',
       }}
     >
-      <Card sx={{ minWidth: 275, maxWidth: 400 }}>
+      <Card sx={{
+        minWidth: 275,
+        maxWidth: 400,
+        backgroundColor: '#262626',
+        color: '#ffffff',
+        '& .MuiOutlinedInput-root': {
+          '& fieldset': { borderColor: '#8C8C8C' },
+          '&:hover fieldset': { borderColor: '#8C8C8C' },
+          '&.Mui-focused fieldset': { borderColor: '#8C8C8C' },
+        },
+      }}>
         <CardContent>
           <Typography variant="h5" component="h2" gutterBottom>
             Sign Up
@@ -84,7 +109,8 @@ export default function Signup({ setIsLoginView }) {
               fullWidth
               margin="normal"
               required
-              inputProps={{ minLength: 6 }}
+              helperText="At least 6 characters"
+              slotProps={{ htmlInput: { minLength: 6 } }}
             />
             <TextField
               id="password"
@@ -95,10 +121,18 @@ export default function Signup({ setIsLoginView }) {
               fullWidth
               margin="normal"
               required
-              inputProps={{ minLength: 8 }}
+              error={!!signupError}
+              helperText={signupError || 'At least 8 characters'}
+              slotProps={{ htmlInput: { minLength: 8 } }}
             />
             <CardActions>
-              <Button type="submit" fullWidth variant="contained">
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={isSubmitting}
+                sx={{ backgroundColor: '#6BAA75' }}
+              >
                 Sign Up
               </Button>
             </CardActions>
@@ -106,16 +140,16 @@ export default function Signup({ setIsLoginView }) {
         </CardContent>
       </Card>
       <Typography variant="body2" sx={{ mt: 2 }}>
-				Already have an account?
-				<Button
-					color="primary"
-					onClick={() => setIsLoginView(true)}
-					component="span"
-					style={{ textTransform: 'none' }}
-				>
-					Log In
-				</Button>
-			</Typography>
+        Already have an account?
+        <Button
+          color="primary"
+          onClick={() => setIsLoginView(true)}
+          component="span"
+          sx={{ textTransform: 'none', color: '#6BAA75' }}
+        >
+          Log In
+        </Button>
+      </Typography>
     </Box>
   );
 }

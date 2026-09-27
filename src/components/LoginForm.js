@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
-import { setUser, setError } from '../../store/slices/authSlice';
+import { setUser } from '../store/slices/authSlice';
+import { getSafeRedirect } from '../lib/redirect';
 import { Card, CardContent, CardActions, TextField, Button, Typography, Box } from '@mui/material';
 
 export default function LoginForm({ setIsLoginView, from }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useDispatch();
     const router = useRouter();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoginError('');
+        setIsSubmitting(true);
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -29,21 +32,21 @@ export default function LoginForm({ setIsLoginView, from }) {
 
             const userData = await response.json();
             dispatch(setUser(userData));
-            if (from) router.push(from) 
-            else router.push('/dashboard');
-        } catch (error) {
-            console.error('An error occurred during login:', error.message);
+            router.push(getSafeRedirect(from));
+        } catch {
             setLoginError('Login failed due to a network error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <Box
             sx={{
-        mt: 8, // Adjust this value based on your Navbar's size and page layout
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+                mt: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
             }}
         >
             <Card sx={{
@@ -63,52 +66,57 @@ export default function LoginForm({ setIsLoginView, from }) {
                     },
                   },
             }}>
-                <CardContent sx={{
-                    '& .MuiInputBase-input': {
-                        color: '#8C8C8C', // Text color
-                      },
-                      '& .MuiInputBase-input::placeholder': {
-                        color: '#8C8C8C',
-                        opacity: 1,
-                      },
-                }}>
-                    <Typography variant="h5" component="h2" gutterBottom>
-                        Log In
-                    </Typography>
-                    <TextField
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={username}
-                        placeholder="username"
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <TextField
-                        type="password"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={password}
-                        placeholder="password"
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        error={!!loginError}
-                        helperText={loginError}
-                    />
-                </CardContent>
-                <CardActions>
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        onClick={handleSubmit}
-                        sx={{
-                            backgroundColor: '#6BAA75'
-                        }}
-                    >
-                        Log In
-                    </Button>
-                </CardActions>
+                <form onSubmit={handleSubmit}>
+                    <CardContent sx={{
+                        '& .MuiInputBase-input': {
+                            color: '#8C8C8C', // Text color
+                          },
+                          '& .MuiInputBase-input::placeholder': {
+                            color: '#8C8C8C',
+                            opacity: 1,
+                          },
+                    }}>
+                        <Typography variant="h5" component="h2" gutterBottom>
+                            Log In
+                        </Typography>
+                        <TextField
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            value={username}
+                            placeholder="username"
+                            autoComplete="username"
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                        <TextField
+                            type="password"
+                            variant="outlined"
+                            fullWidth
+                            margin="normal"
+                            value={password}
+                            placeholder="password"
+                            autoComplete="current-password"
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            error={!!loginError}
+                            helperText={loginError}
+                        />
+                    </CardContent>
+                    <CardActions>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            disabled={isSubmitting}
+                            sx={{
+                                backgroundColor: '#6BAA75'
+                            }}
+                        >
+                            Log In
+                        </Button>
+                    </CardActions>
+                </form>
             </Card>
             <Typography variant="body2" sx={{ mt: 2 }}>
                 Don&apos;t have an account?

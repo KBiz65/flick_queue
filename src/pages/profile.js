@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { Box, Container, Typography, TextField, Button, FormControlLabel, Switch, Grid, Paper } from '@mui/material';
-import Navbar from '../shared/Navbar';
+import { useDispatch } from 'react-redux';
+import Head from 'next/head';
+import { Box, CircularProgress, Container, Typography, TextField, Button, FormControlLabel, Switch, Grid, Paper } from '@mui/material';
+import Navbar from '../components/Navbar';
+import { setUser } from '../store/slices/authSlice';
 
 const Profile = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
+    const [isSaving, setIsSaving] = useState(false);
     const [userData, setUserData] = useState({
         username: '',
         email: '',
@@ -33,8 +38,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const userResponse = await axios.get('/api/user/getUserData', { withCredentials: true });
-                console.log('userResponse: ', userResponse);
+                const userResponse = await axios.get('/api/user/getUserData');
                 setUserData({
                     username: userResponse.data.username,
                     email: userResponse.data.email,
@@ -47,27 +51,29 @@ const Profile = () => {
                 });
             } catch (error) {
                 if (error.response && error.response.status === 401) {
-                    console.log('User is not authenticated');
                     router.push({
-                        pathname: '/home',
+                        pathname: '/',
                         query: { from: '/profile' },
                     });
                 } else {
-                    console.log('error: ', error);
+                    setUpdateStatus({ message: 'Could not load your profile. Please refresh.', isError: true });
                 }
             }
         };
         fetchUserData();
     }, [router]);
 
+    const showStatus = (message, isError) => {
+        setUpdateStatus({ message, isError });
+        setTimeout(() => {
+            setUpdateStatus({ message: '', isError });
+        }, 5000);
+    };
+
     const updateUserData = async () => {
+        setIsSaving(true);
         try {
-            const response = await axios.post('/api/user/updateUserData', userData, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await axios.post('/api/user/updateUserData', userData);
             const responseData = response.data;
             const newUserData = {
                 username: responseData.username,
@@ -89,9 +95,12 @@ const Profile = () => {
                 confirmPassword: '',
                 oldPassword: '',
             });
-            router.push('/profile');
+            dispatch(setUser({ firstName: responseData.firstName }));
+            showStatus('Profile updated successfully.', false);
         } catch (error) {
-            console.log('error: ', error);
+            showStatus(error.response?.data?.message || 'Profile update failed. Please try again.', true);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -109,7 +118,11 @@ const Profile = () => {
         let errors = {};
 
         // Validate newPassword and confirmPassword
-        if (userData.newPassword || userData.confirmPassword) {
+        if (userData.newPassword || userData.confirmPassword || userData.oldPassword) {
+            if (userData.newPassword.length < 8) {
+                errors.newPassword = 'New password must be at least 8 characters';
+            }
+
             if (userData.newPassword !== userData.confirmPassword) {
                 errors.confirmPassword = 'New passwords do not match';
             }
@@ -125,45 +138,47 @@ const Profile = () => {
         if (!userData.lastName) errors.lastName = 'Last name cannot be blank';
 
         // Update the formErrors state
+        setFormErrors(errors);
 
         // If there are any errors, prevent form submission
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors);
-            setUpdateStatus({ message: 'Please correct errors before submitting.', isError: true });
-            setTimeout(() => {
-                setUpdateStatus({ message: '', isError: true });
-            }, 5000);
+            showStatus('Please correct errors before submitting.', true);
             return;
         }
 
         // If no errors, proceed with form submission
-        updateUserData();
-        setUpdateStatus({ message: 'Profile updated successfully.', isError: false });
-        setTimeout(() => {
-            setUpdateStatus({ message: '', isError: false });
-        }, 5000);
-        router.push('/profile');
+        await updateUserData();
     };
 
     if (!userData.username) {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
                 <Navbar />
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+                    {updateStatus.isError ? (
+                        <Typography color="error">{updateStatus.message}</Typography>
+                    ) : (
+                        <CircularProgress />
+                    )}
+                </Box>
             </Box>
         );
     };
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Head>
+                <title>Profile | FlickQueue</title>
+            </Head>
             <Navbar />
             <Container component="main" maxWidth="sm">
-                <Paper elevation={3} sx={{ p: 4, mt: 12, mb: 2 }}>
+                <Paper elevation={3} sx={{ p: 4, mt: 4, mb: 2 }}>
                     <Typography component="h1" variant="h5">
                         Edit Profile
                     </Typography>
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={2}>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="Username"
@@ -175,7 +190,7 @@ const Profile = () => {
                                     helperText={formErrors.username}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="Email"
@@ -187,7 +202,7 @@ const Profile = () => {
                                     helperText={formErrors.email}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="First Name"
@@ -199,7 +214,7 @@ const Profile = () => {
                                     helperText={formErrors.firstName}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="Last Name"
@@ -211,7 +226,7 @@ const Profile = () => {
                                     helperText={formErrors.lastName}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="New Password"
@@ -223,7 +238,7 @@ const Profile = () => {
                                     helperText={formErrors.newPassword}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="Confirm New Password"
@@ -235,7 +250,7 @@ const Profile = () => {
                                     helperText={formErrors.confirmPassword}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField
                                     fullWidth
                                     label="Old Password"
@@ -247,7 +262,7 @@ const Profile = () => {
                                     helperText={formErrors.oldPassword}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <FormControlLabel
                                     control={
                                         <Switch
@@ -259,9 +274,9 @@ const Profile = () => {
                                     label="Allow Adult Content"
                                 />
                             </Grid>
-                            <Grid item xs={12}>
-                                <Button type="submit" fullWidth variant="contained" color="primary">
-                                    Update Profile
+                            <Grid size={12}>
+                                <Button type="submit" fullWidth variant="contained" color="primary" disabled={isSaving}>
+                                    {isSaving ? 'Saving...' : 'Update Profile'}
                                 </Button>
                             </Grid>
                             {updateStatus.message && (

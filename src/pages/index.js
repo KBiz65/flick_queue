@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Navbar from './shared/Navbar';
-import LoginForm from './loginAndSignup/Login';
-import SignupForm from './loginAndSignup/Signup';
+import Navbar from '../components/Navbar';
+import LoginForm from '../components/LoginForm';
+import SignupForm from '../components/SignupForm';
 import { Container, Grid, Typography } from '@mui/material';
 
 export default function Home() {
@@ -25,22 +25,19 @@ export default function Home() {
                     spacing={3}
                     justifyContent="center"
                     alignItems="center"
-                    style={{ minHeight: 'calc(100vh - 40px)' }}
+                    style={{ minHeight: 'calc(100vh - 128px)' }}
                 >
                     {/* Information Column */}
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <Typography variant="h3" component="h1" gutterBottom>
                             Welcome to FlickQueue
                         </Typography>
                         <Typography variant="h5">Your ultimate movie and TV show tracking app.</Typography>
-                        {/* Additional content */}
                     </Grid>
 
                     {/* Form Column */}
                     <Grid
-                        item
-                        xs={12}
-                        md={6}
+                        size={{ xs: 12, md: 6 }}
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',

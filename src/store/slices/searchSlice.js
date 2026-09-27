@@ -2,15 +2,15 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export const performSearch = createAsyncThunk('search/performSearch', async (searchTerm, { rejectWithValue }) => {
-    if (!searchTerm.trim()) {
+    if (!searchTerm?.trim()) {
         return rejectWithValue('Search term cannot be empty');
     }
 
     try {
-        const response = await axios.get(`/api/tmdb/multiSearch?searchItem=${encodeURIComponent(searchTerm)}`);
+        const response = await axios.get('/api/tmdb/multiSearch', { params: { searchItem: searchTerm.trim() } });
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data?.message || 'Search failed');
     }
 });
 
@@ -27,17 +27,15 @@ export const searchSlice = createSlice({
         setSearchItem: (state, action) => {
             state.searchItem = action.payload;
         },
-        setSearchData: (state, action) => {
-            state.searchData = action.payload;
-        },
         setIsSearchInvalid: (state, action) => {
             state.isSearchInvalid = action.payload;
         },
     },
     extraReducers: (builder) => {
         builder
-            .addCase(performSearch.pending, (state, action) => {
+            .addCase(performSearch.pending, (state) => {
                 state.status = 'loading';
+                state.error = null;
             })
             .addCase(performSearch.fulfilled, (state, action) => {
                 state.status = 'succeeded';
@@ -45,21 +43,22 @@ export const searchSlice = createSlice({
                 state.isSearchInvalid = false;
             })
             .addCase(performSearch.rejected, (state, action) => {
-            state.status = 'failed';
-            state.error = action.payload;
-            state.isSearchInvalid = true;
+                state.status = 'failed';
+                state.error = action.payload;
+                state.isSearchInvalid = true;
             });
     }
 });
 
 // Actions
-export const { setSearchItem, setSearchData, setIsSearchInvalid } = searchSlice.actions;
+export const { setSearchItem, setIsSearchInvalid } = searchSlice.actions;
 
 // Selector
 export const selectSearchItem = (state) => state.search.searchItem;
 export const selectSearchData = (state) => state.search.searchData;
 export const selectIsSearchInvalid = (state) => state.search.isSearchInvalid;
-
+export const selectSearchStatus = (state) => state.search.status;
+export const selectSearchError = (state) => state.search.error;
 
 // Reducer
 export default searchSlice.reducer;
