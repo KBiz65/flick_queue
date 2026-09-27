@@ -19,3 +19,14 @@ export async function allowsAdultContent(cookieHeader) {
     const { rows } = await pool.query('SELECT allow_adult_content FROM users WHERE user_id = $1', [userId]);
     return rows[0]?.allow_adult_content === true;
 }
+
+// Trim a TMDB list item down to what a poster row needs (keeps page props small)
+export function toMediaCard(item, fallbackType) {
+    return {
+        id: item.id,
+        media_type: item.media_type || fallbackType,
+        title: item.title || null,
+        name: item.name || null,
+        poster_path: item.poster_path || null,
+    };
+}

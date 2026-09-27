@@ -5,7 +5,7 @@ import { Avatar, Box, Chip, Container, Grid, Stack, Typography } from '@mui/mate
 import StarIcon from '@mui/icons-material/Star';
 import Navbar from '../../../components/Navbar';
 import MediaRow from '../../../components/MediaRow';
-import { tmdbGet, allowsAdultContent } from '@/lib/tmdb';
+import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
 
 const MEDIA_TYPES = ['movie', 'tv'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
@@ -242,13 +242,7 @@ export async function getServerSideProps({ params, req }) {
         recommendations: (data.recommendations?.results || [])
             .filter((item) => includeAdult || !item.adult)
             .slice(0, 20)
-            .map((item) => ({
-                id: item.id,
-                media_type: item.media_type || type,
-                title: item.title || null,
-                name: item.name || null,
-                poster_path: item.poster_path || null,
-            })),
+            .map((item) => toMediaCard(item, type)),
     };
 
     return { props: { media } };
