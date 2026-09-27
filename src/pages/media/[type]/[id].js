@@ -1,10 +1,13 @@
 import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { Avatar, Box, Chip, Container, Grid, Stack, Typography } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { Avatar, Box, Button, Chip, Container, Grid, Stack, Typography } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Navbar from '../../../components/Navbar';
 import MediaRow from '../../../components/MediaRow';
+import { openAddDialog } from '../../../store/slices/watchlistSlice';
 import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
 
 const MEDIA_TYPES = ['movie', 'tv'];
@@ -60,6 +63,7 @@ const CastRow = ({ cast }) => (
 );
 
 const MediaDetails = ({ media }) => {
+    const dispatch = useDispatch();
     const facts = [media.releaseDate, media.length].filter(Boolean);
 
     return (
@@ -137,6 +141,15 @@ const MediaDetails = ({ media }) => {
                                 ))}
                             </Stack>
                         )}
+
+                        <Button
+                            variant="contained"
+                            startIcon={<PlaylistAddIcon />}
+                            onClick={() => dispatch(openAddDialog({ tmdbId: media.id, type: media.type, title: media.title }))}
+                            sx={{ mt: 3 }}
+                        >
+                            Add to Watchlist
+                        </Button>
 
                         <Typography variant="h6" sx={{ mt: 3 }}>
                             Overview

@@ -41,6 +41,11 @@ const Navbar = () => {
         handleClose();
     };
 
+    const navigateToWatchlists = () => {
+        router.push('/watchlists');
+        handleClose();
+    };
+
     const navigateToProfile = () => {
         router.push('/profile');
         handleClose();
@@ -182,6 +187,7 @@ const Navbar = () => {
                     onClose={handleClose}
                 >
                     <MenuItem onClick={navigateToDashboard}>Dashboard</MenuItem>
+                    <MenuItem onClick={navigateToWatchlists}>My Watchlists</MenuItem>
                     <MenuItem onClick={navigateToProfile}>Profile</MenuItem>
                     <MenuItem onClick={handleLogout}>Log Out</MenuItem>
                 </Menu>

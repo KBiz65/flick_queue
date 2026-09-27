@@ -1,14 +1,17 @@
 import React, { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useDispatch } from 'react-redux';
 import { Box, ImageList, ImageListItem, IconButton, Tooltip, Typography } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import AddIcon from '@mui/icons-material/Add';
+import { openAddDialog } from '../store/slices/watchlistSlice';
 
 // A horizontal, scrollable row of posters. Used on search results, the dashboard, and title pages.
 const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
     const rowRef = useRef(null);
+    const dispatch = useDispatch();
 
     // Scroll the row by most of its visible width, in either direction
     const scrollRow = (direction) => {
@@ -78,7 +81,11 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
                   }}>
                     <Tooltip title="Add to Watchlist">
                       <IconButton color="primary"
-                          onClick={(event) => event.preventDefault()}
+                          aria-label={`Add ${item.title || item.name} to a watchlist`}
+                          onClick={(event) => {
+                              event.preventDefault();
+                              dispatch(openAddDialog({ tmdbId: item.id, type: itemType, title: item.title || item.name }));
+                          }}
                           sx={{
                               position: 'absolute',
                               bottom: 16,

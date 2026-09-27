@@ -4,8 +4,8 @@ import axios from 'axios';
 // Ask the server who is logged in (the auth cookie is httpOnly, so the browser can't read it directly)
 export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWithValue }) => {
   try {
-    const response = await axios.get('/api/user/getUserData');
-    return response.data;
+    const response = await axios.get('/api/auth/session');
+    return response.data.user ?? rejectWithValue(null);
   } catch (error) {
     return rejectWithValue(error.response?.data);
   }
