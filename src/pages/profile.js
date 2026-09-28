@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import Head from 'next/head';
-import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, Stack, Switch, Paper } from '@mui/material';
+import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, MenuItem, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
 import { setUser } from '../store/slices/authSlice';
 
@@ -20,7 +20,9 @@ const Profile = () => {
         confirmPassword: '',
         oldPassword: '',
         allowAdultContent: false,
+        watchRegion: 'US',
     });
+    const [regions, setRegions] = useState([]);
     const [formErrors, setFormErrors] = useState({
         username: '',
         email: '',
@@ -48,6 +50,7 @@ const Profile = () => {
                     confirmPassword: '',
                     oldPassword: '',
                     allowAdultContent: userResponse.data.allowAdultContent || false,
+                    watchRegion: userResponse.data.watchRegion || 'US',
                 });
             } catch (error) {
                 if (error.response && error.response.status === 401) {
@@ -62,6 +65,14 @@ const Profile = () => {
         };
         fetchUserData();
     }, [router]);
+
+    // Countries for the streaming availability dropdown
+    useEffect(() => {
+        axios
+            .get('/api/tmdb/regions')
+            .then((response) => setRegions(response.data.regions))
+            .catch(() => setRegions([]));
+    }, []);
 
     const showStatus = (message, isError) => {
         setUpdateStatus({ message, isError });
@@ -84,6 +95,7 @@ const Profile = () => {
                 confirmPassword: '',
                 oldPassword: '',
                 allowAdultContent: responseData.allowAdultContent,
+                watchRegion: responseData.watchRegion,
             };
             setUserData(newUserData);
             setFormErrors({
@@ -269,8 +281,25 @@ const Profile = () => {
                     <Typography variant="h6" component="h2">
                         Content
                     </Typography>
+                    <TextField
+                        select
+                        label="Country"
+                        name="watchRegion"
+                        value={regions.length ? userData.watchRegion : ''}
+                        onChange={handleInputChange}
+                        helperText="Used to show where titles are streaming, for rent, or for sale."
+                        disabled={!regions.length}
+                        sx={{ mt: 2 }}
+                        slotProps={{ select: { MenuProps: { slotProps: { paper: { sx: { maxHeight: 360 } } } } } }}
+                    >
+                        {regions.map((region) => (
+                            <MenuItem key={region.code} value={region.code}>
+                                {region.name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
                     <FormControlLabel
-                        sx={{ mt: 1, alignItems: 'flex-start', ml: 0, gap: 1.5 }}
+                        sx={{ mt: 3, alignItems: 'flex-start', ml: 0, gap: 1.5 }}
                         control={
                             <Switch
                                 checked={userData.allowAdultContent || false}

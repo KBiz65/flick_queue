@@ -3,7 +3,7 @@ import { createHandler } from '@/lib/api';
 
 async function getUserData(req, res) {
     const { rows } = await pool.query(
-        'SELECT username, email, first_name, last_name, allow_adult_content FROM users WHERE user_id = $1',
+        'SELECT username, email, first_name, last_name, allow_adult_content, watch_region FROM users WHERE user_id = $1',
         [req.userId]
     );
 
@@ -19,6 +19,7 @@ async function getUserData(req, res) {
         firstName: user.first_name,
         lastName: user.last_name,
         allowAdultContent: user.allow_adult_content,
+        watchRegion: user.watch_region,
     });
 }
 

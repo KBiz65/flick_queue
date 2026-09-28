@@ -8,10 +8,12 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Navbar from '../../../components/Navbar';
 import MediaRow from '../../../components/MediaRow';
 import CastRow from '../../../components/CastRow';
+import WhereToWatch from '../../../components/WhereToWatch';
 import { openAddDialog } from '../../../store/slices/watchlistSlice';
 import { posterUrl, tmdbImage } from '../../../lib/images';
 import { colors } from '../../../theme';
-import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
+import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
+import { getUserIdFromCookieHeader } from '@/lib/auth';
 
 const MEDIA_TYPES = ['movie', 'tv'];
 
@@ -36,7 +38,32 @@ function plural(count, word) {
     return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
-const MediaDetails = ({ media }) => {
+// Group TMDB's per-country provider lists into the sections shown under "Where to watch"
+const PROVIDER_GROUPS = [
+    { key: 'flatrate', label: 'Stream' },
+    { key: 'free', label: 'Free' },
+    { key: 'ads', label: 'Free with ads' },
+    { key: 'rent', label: 'Rent' },
+    { key: 'buy', label: 'Buy' },
+];
+
+function buildWhereToWatch(providersByRegion, region) {
+    const available = providersByRegion?.[region] || {};
+    const regionName = new Intl.DisplayNames(['en'], { type: 'region' }).of(region) || region;
+
+    return {
+        regionName,
+        link: available.link || null,
+        groups: PROVIDER_GROUPS.map((group) => ({
+            label: group.label,
+            providers: (available[group.key] || [])
+                .sort((a, b) => a.display_priority - b.display_priority)
+                .map((provider) => ({ id: provider.provider_id, name: provider.provider_name, logoPath: provider.logo_path })),
+        })).filter((group) => group.providers.length > 0),
+    };
+}
+
+const MediaDetails = ({ media, isLoggedIn }) => {
     const dispatch = useDispatch();
     const facts = [media.releaseDate, media.length].filter(Boolean);
 
@@ -136,14 +163,17 @@ const MediaDetails = ({ media }) => {
                             {media.overview || 'No overview available.'}
                         </Typography>
                     </Box>
-                    {media.creators.names.length > 0 && (
-                        <Box>
-                            <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                                {media.creators.label}
-                            </Typography>
-                            <Typography sx={{ mt: 0.5, fontWeight: 600 }}>{media.creators.names.join(', ')}</Typography>
-                        </Box>
-                    )}
+                    <Stack spacing={4}>
+                        {media.creators.names.length > 0 && (
+                            <Box>
+                                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                                    {media.creators.label}
+                                </Typography>
+                                <Typography sx={{ mt: 0.5, fontWeight: 600 }}>{media.creators.names.join(', ')}</Typography>
+                            </Box>
+                        )}
+                        <WhereToWatch whereToWatch={media.whereToWatch} canChangeRegion={isLoggedIn} />
+                    </Stack>
                 </Box>
 
                 {media.cast.length > 0 && (
@@ -177,13 +207,13 @@ export async function getServerSideProps({ params, req }) {
 
     let data;
     try {
-        data = await tmdbGet(`/${type}/${id}`, { append_to_response: 'credits,recommendations' });
+        data = await tmdbGet(`/${type}/${id}`, { append_to_response: 'credits,recommendations,watch/providers' });
     } catch (error) {
         if (error.response?.status === 404) return { notFound: true };
         throw error;
     }
 
-    const includeAdult = await allowsAdultContent(req.headers.cookie);
+    const { includeAdult, watchRegion } = await getViewerSettings(req.headers.cookie);
     if (data.adult && !includeAdult) {
         return { notFound: true };
     }
@@ -233,9 +263,10 @@ export async function getServerSideProps({ params, req }) {
             .filter((item) => includeAdult || !item.adult)
             .slice(0, 20)
             .map((item) => toMediaCard(item, type)),
+        whereToWatch: buildWhereToWatch(data['watch/providers']?.results, watchRegion),
     };
 
-    return { props: { media } };
+    return { props: { media, isLoggedIn: Boolean(getUserIdFromCookieHeader(req.headers.cookie)) } };
 }
 
 export default MediaDetails;

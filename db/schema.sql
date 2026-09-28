@@ -15,6 +15,7 @@ CREATE TABLE users (
     first_name VARCHAR(255),
     last_name VARCHAR(255),
     allow_adult_content BOOLEAN NOT NULL DEFAULT false,
+    watch_region VARCHAR(2) NOT NULL DEFAULT 'US',
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     CONSTRAINT users_username_key UNIQUE (username),
