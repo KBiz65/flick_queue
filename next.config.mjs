@@ -3,13 +3,8 @@ const nextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
     images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'image.tmdb.org',
-                pathname: '/t/p/**',
-            },
-        ],
+        // TMDB already serves pre-sized images from its CDN, so skip resizing them on the server
+        unoptimized: true,
     },
 };
 
