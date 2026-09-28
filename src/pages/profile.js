@@ -165,7 +165,7 @@ const Profile = () => {
 
     if (!userData.username) {
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Box>
                 <Navbar />
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
                     {updateStatus.isError ? (
@@ -179,7 +179,7 @@ const Profile = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Box>
             <Head>
                 <title>Profile | FlickQueue</title>
             </Head>

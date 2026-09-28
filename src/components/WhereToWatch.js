@@ -5,7 +5,7 @@ import { Box, Link as MuiLink, Stack, Tooltip, Typography } from '@mui/material'
 import { tmdbImage } from '../lib/images';
 
 // Streaming, rental, and purchase options for one country. Data comes from JustWatch through TMDB,
-// which requires crediting JustWatch and linking to TMDB's watch page rather than directly to each service.
+// which requires linking to TMDB's watch page rather than directly to each service (JustWatch is credited in the footer).
 const WhereToWatch = ({ whereToWatch, canChangeRegion }) => {
     const { regionName, link, groups } = whereToWatch;
 
@@ -65,13 +65,6 @@ const WhereToWatch = ({ whereToWatch, canChangeRegion }) => {
                     ))}
                 </Stack>
             )}
-
-            <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary' }}>
-                Streaming data from{' '}
-                <MuiLink href="https://www.justwatch.com" target="_blank" rel="noopener noreferrer" color="inherit">
-                    JustWatch
-                </MuiLink>
-            </Typography>
         </Box>
     );
 };
