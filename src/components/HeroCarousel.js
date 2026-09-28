@@ -22,8 +22,8 @@ const fillBar = keyframes`
 // Full-width rotating showcase of this week's trending titles. Plays through every slide, then starts over.
 // Hovering (or typing in the login form) pauses it so people can read a title before it moves on.
 // Anything passed as children (the login form) sits on the right side of the hero.
-const HeroCarousel = ({ slides, children }) => {
-    const [index, setIndex] = useState(0);
+const HeroCarousel = ({ slides, startIndex = 0, children }) => {
+    const [index, setIndex] = useState(startIndex);
     const [isPaused, setIsPaused] = useState(false);
     const isPlaying = slides.length > 1 && !isPaused;
     const slide = slides[index];
@@ -48,7 +48,7 @@ const HeroCarousel = ({ slides, children }) => {
                         src={tmdbImage(slide.backdropPath, 'w1280')}
                         alt=""
                         fill
-                        priority={index === 0}
+                        priority={index === startIndex}
                         sizes="100vw"
                         style={{ objectFit: 'cover', objectPosition: 'center top' }}
                     />

@@ -7,7 +7,7 @@ import LoginForm from '../components/LoginForm';
 import SignupForm from '../components/SignupForm';
 import { tmdbGet } from '@/lib/tmdb';
 
-export default function Home({ slides }) {
+export default function Home({ slides, startIndex }) {
     const [isLoginView, setIsLoginView] = useState(true);
     const router = useRouter();
     const { from } = router.query;
@@ -20,7 +20,7 @@ export default function Home({ slides }) {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Navbar />
-            <HeroCarousel slides={slides}>
+            <HeroCarousel slides={slides} startIndex={startIndex}>
                 {isLoginView ? (
                     <LoginForm setIsLoginView={setIsLoginView} from={from} />
                 ) : (
@@ -57,9 +57,13 @@ export async function getServerSideProps() {
             if (showSlides[index]) slides.push(showSlides[index]);
         }
 
-        return { props: { slides } };
+        // Start on a random title so return visitors don't always see the same one first.
+        // Picked on the server so the server and browser render the same slide.
+        const startIndex = slides.length ? Math.floor(Math.random() * slides.length) : 0;
+
+        return { props: { slides, startIndex } };
     } catch (error) {
         console.error('Failed to load trending titles for the home page:', error.message);
-        return { props: { slides: [] } };
+        return { props: { slides: [], startIndex: 0 } };
     }
 }

@@ -129,8 +129,9 @@ const Profile = () => {
 
         let errors = {};
 
-        // Validate newPassword and confirmPassword
-        if (userData.newPassword || userData.confirmPassword || userData.oldPassword) {
+        // Only treat this as a password change when a new password was typed.
+        // (Browsers often auto-fill the current password field, which on its own shouldn't block saving.)
+        if (userData.newPassword || userData.confirmPassword) {
             if (userData.newPassword.length < 8) {
                 errors.newPassword = 'New password must be at least 8 characters';
             }

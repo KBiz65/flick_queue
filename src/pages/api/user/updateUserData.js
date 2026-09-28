@@ -32,8 +32,9 @@ async function updateUserData(req, res) {
         'UPDATE users SET email = $1, username = $2, first_name = $3, last_name = $4, allow_adult_content = $5, watch_region = $6';
     let updateQueryEnd = ' WHERE user_id = $7';
 
-    // Handle password change if any password field is filled in
-    if (oldPassword || newPassword || confirmPassword) {
+    // Handle a password change only when a new password was sent.
+    // A current password on its own (often browser auto-fill) is ignored.
+    if (newPassword || confirmPassword) {
         if (!oldPassword || !newPassword || !confirmPassword) {
             return res.status(422).json({ message: 'Fill in all three password fields to change your password.' });
         }
