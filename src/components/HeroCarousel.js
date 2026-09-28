@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Box, Button, Chip, Container, IconButton, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import StarIcon from '@mui/icons-material/Star';
 import { tmdbImage } from '../lib/images';
 import { colors } from '../theme';
@@ -22,12 +20,12 @@ const fillBar = keyframes`
 `;
 
 // Full-width rotating showcase of this week's trending titles. Plays through every slide, then starts over.
+// Hovering (or typing in the login form) pauses it so people can read a title before it moves on.
 // Anything passed as children (the login form) sits on the right side of the hero.
 const HeroCarousel = ({ slides, children }) => {
     const [index, setIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-    const isPlaying = slides.length > 1 && !isPaused && !prefersReducedMotion;
+    const isPlaying = slides.length > 1 && !isPaused;
     const slide = slides[index];
     const nextSlide = slides[(index + 1) % slides.length];
 
@@ -37,17 +35,15 @@ const HeroCarousel = ({ slides, children }) => {
         return () => clearTimeout(timer);
     }, [index, isPlaying, slides.length]);
 
-    const goTo = (step) => setIndex((current) => (current + step + slides.length) % slides.length);
-
     return (
         <Box
             component="section"
             aria-roledescription="carousel"
             aria-label="Trending this week"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            onFocus={() => setIsPaused(true)}
-            onBlur={() => setIsPaused(false)}
+            // onMouseEnter={() => setIsPaused(true)}
+            // onMouseLeave={() => setIsPaused(false)}
+            // onFocus={() => setIsPaused(true)}
+            // onBlur={() => setIsPaused(false)}
             sx={{ position: 'relative', overflow: 'hidden', minHeight: { md: 'calc(100vh - 64px)' }, display: 'flex' }}
         >
             {slide && (
@@ -124,14 +120,8 @@ const HeroCarousel = ({ slides, children }) => {
                             View details
                         </Button>
 
-                        <Stack direction="row" spacing={1} sx={{ mt: 4, alignItems: 'center' }}>
-                            <IconButton aria-label="Previous title" onClick={() => goTo(-1)} sx={{ border: 1, borderColor: 'divider' }}>
-                                <ChevronLeftIcon />
-                            </IconButton>
-                            <IconButton aria-label="Next title" onClick={() => goTo(1)} sx={{ border: 1, borderColor: 'divider' }}>
-                                <ChevronRightIcon />
-                            </IconButton>
-                            <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: 56, textAlign: 'center' }}>
+                        {/* <Stack direction="row" spacing={1.5} sx={{ mt: 4, alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: 48 }}>
                                 {index + 1} / {slides.length}
                             </Typography>
                             <Box sx={{ flexGrow: 1, maxWidth: 160, height: 3, borderRadius: 999, bgcolor: 'divider', overflow: 'hidden' }}>
@@ -146,7 +136,7 @@ const HeroCarousel = ({ slides, children }) => {
                                     }}
                                 />
                             </Box>
-                        </Stack>
+                        </Stack> */}
                     </Box>
                 ) : (
                     <Box sx={{ maxWidth: 640 }}>
