@@ -5,6 +5,9 @@ import { parse, serialize } from 'cookie';
 export const AUTH_COOKIE = 'FlickQueueAuth';
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7;
 
+// Checked when a username doesn't exist, so a failed login takes the same time whether or not the user is real
+export const DUMMY_PASSWORD_HASH = '$2b$10$m4./rTxawdqOu1HTXdIW0.Fgg9yP8n9h1PKkc1FKWtDqS7rMbC35q';
+
 function getSecret() {
     const secret = process.env.JWT_SECRET;
     if (!secret) {

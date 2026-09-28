@@ -23,6 +23,7 @@ import {
     fetchWatchlists,
     removeFromWatchlist,
     selectDialogMedia,
+    selectWatchlistError,
     selectWatchlists,
     selectWatchlistStatus,
 } from '../store/slices/watchlistSlice';
@@ -36,6 +37,7 @@ const AddToWatchlistDialog = () => {
     const media = useSelector(selectDialogMedia);
     const lists = useSelector(selectWatchlists);
     const status = useSelector(selectWatchlistStatus);
+    const loadError = useSelector(selectWatchlistError);
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
     const isAuthChecked = useSelector((state) => state.auth.isAuthChecked);
     const [newListName, setNewListName] = useState('');
@@ -112,7 +114,9 @@ const AddToWatchlistDialog = () => {
         <Dialog open={Boolean(media) && isAuthenticated} onClose={handleClose} fullWidth maxWidth="xs">
             <DialogTitle>Add &quot;{media?.title}&quot; to...</DialogTitle>
             <DialogContent>
-                {status === 'loading' && lists.length === 0 ? (
+                {status === 'failed' ? (
+                    <Alert severity="error">{loadError}</Alert>
+                ) : status !== 'succeeded' ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
                         <CircularProgress size={28} />
                     </Box>

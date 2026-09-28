@@ -38,14 +38,20 @@ const WatchlistItemCard = ({ item, onToggleWatched, onRemove, isBusy }) => (
             <Box>
                 <Tooltip title={item.watched ? 'Mark as not watched' : 'Mark as watched'}>
                     <span>
-                        <IconButton size="small" color="primary" disabled={isBusy} onClick={() => onToggleWatched(item)}>
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={isBusy}
+                            onClick={() => onToggleWatched(item)}
+                            aria-label={item.watched ? `Mark ${item.title} as not watched` : `Mark ${item.title} as watched`}
+                        >
                             {item.watched ? <CheckCircleIcon fontSize="small" /> : <RadioButtonUncheckedIcon fontSize="small" />}
                         </IconButton>
                     </span>
                 </Tooltip>
                 <Tooltip title="Remove from list">
                     <span>
-                        <IconButton size="small" disabled={isBusy} onClick={() => onRemove(item)}>
+                        <IconButton size="small" disabled={isBusy} onClick={() => onRemove(item)} aria-label={`Remove ${item.title} from list`}>
                             <DeleteOutlineIcon fontSize="small" />
                         </IconButton>
                     </span>

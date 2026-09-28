@@ -11,6 +11,7 @@ const Profile = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [userData, setUserData] = useState({
         username: '',
         email: '',
@@ -52,6 +53,7 @@ const Profile = () => {
                     allowAdultContent: userResponse.data.allowAdultContent || false,
                     watchRegion: userResponse.data.watchRegion || 'US',
                 });
+                setIsLoaded(true);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
                     router.push({
@@ -163,7 +165,7 @@ const Profile = () => {
         await updateUserData();
     };
 
-    if (!userData.username) {
+    if (!isLoaded) {
         return (
             <Box>
                 <Navbar />
@@ -176,7 +178,7 @@ const Profile = () => {
                 </Box>
             </Box>
         );
-    };
+    }
 
     return (
         <Box>

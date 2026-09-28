@@ -55,6 +55,10 @@ export const watchlistSlice = createSlice({
     reducers: {
         openAddDialog(state, action) {
             state.dialogMedia = action.payload;
+            // Checkmarks belong to the previous title until the lists reload for this one
+            state.lists.forEach((list) => {
+                list.mediaItemId = null;
+            });
         },
         closeAddDialog(state) {
             state.dialogMedia = null;

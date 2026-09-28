@@ -2,7 +2,7 @@ import axios from 'axios';
 import pool from './db';
 import { getUserIdFromCookieHeader } from './auth';
 
-const tmdb = axios.create({ baseURL: 'https://api.themoviedb.org/3' });
+const tmdb = axios.create({ baseURL: 'https://api.themoviedb.org/3', timeout: 8000 });
 
 export async function tmdbGet(path, params = {}) {
     const response = await tmdb.get(path, {

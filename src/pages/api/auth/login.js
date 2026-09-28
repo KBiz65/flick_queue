@@ -1,5 +1,5 @@
 import pool from '@/lib/db';
-import { verifyPassword, setAuthCookie } from '@/lib/auth';
+import { DUMMY_PASSWORD_HASH, verifyPassword, setAuthCookie } from '@/lib/auth';
 
 export default async function login(req, res) {
 
@@ -18,7 +18,8 @@ export default async function login(req, res) {
         const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
 
         const user = rows[0];
-        const isValid = user ? await verifyPassword(password, user.password_hash) : false;
+        const passwordMatches = await verifyPassword(password, user ? user.password_hash : DUMMY_PASSWORD_HASH);
+        const isValid = Boolean(user) && passwordMatches;
 
         if (!isValid) {
             return res.status(401).json({ message: 'Incorrect username or password.' });

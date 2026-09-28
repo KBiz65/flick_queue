@@ -15,6 +15,14 @@ const UNIQUE_VIOLATION_MESSAGES = {
     ratings_user_media_key: 'You already rated this title.',
 };
 
+// Axios errors carry the request config, including the TMDB api_key, so log only a summary of them
+function describeError(error) {
+    if (error.isAxiosError) {
+        return `${error.message} (${error.config?.method?.toUpperCase()} ${error.config?.url})`;
+    }
+    return error;
+}
+
 export function createHandler(methods, { auth = true } = {}) {
     return async function handler(req, res) {
         const method = methods[req.method];
@@ -42,7 +50,7 @@ export function createHandler(methods, { auth = true } = {}) {
                 const message = UNIQUE_VIOLATION_MESSAGES[error.constraint] || 'That already exists.';
                 return res.status(409).json({ message });
             }
-            console.error(`${req.method} ${req.url} failed:`, error);
+            console.error(`${req.method} ${req.url} failed:`, describeError(error));
             return res.status(500).json({ message: 'Something went wrong. Please try again.' });
         }
     };
