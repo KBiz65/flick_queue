@@ -40,10 +40,6 @@ const HeroCarousel = ({ slides, children }) => {
             component="section"
             aria-roledescription="carousel"
             aria-label="Trending this week"
-            // onMouseEnter={() => setIsPaused(true)}
-            // onMouseLeave={() => setIsPaused(false)}
-            // onFocus={() => setIsPaused(true)}
-            // onBlur={() => setIsPaused(false)}
             sx={{ position: 'relative', overflow: 'hidden', minHeight: { md: 'calc(100vh - 64px)' }, display: 'flex' }}
         >
             {slide && (
@@ -120,23 +116,6 @@ const HeroCarousel = ({ slides, children }) => {
                             View details
                         </Button>
 
-                        {/* <Stack direction="row" spacing={1.5} sx={{ mt: 4, alignItems: 'center' }}>
-                            <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: 48 }}>
-                                {index + 1} / {slides.length}
-                            </Typography>
-                            <Box sx={{ flexGrow: 1, maxWidth: 160, height: 3, borderRadius: 999, bgcolor: 'divider', overflow: 'hidden' }}>
-                                <Box
-                                    key={`${index}-${isPlaying}`}
-                                    sx={{
-                                        height: '100%',
-                                        bgcolor: 'primary.main',
-                                        transformOrigin: 'left',
-                                        transform: isPlaying ? undefined : 'scaleX(0)',
-                                        animation: isPlaying ? `${fillBar} ${SLIDE_MS}ms linear forwards` : 'none',
-                                    }}
-                                />
-                            </Box>
-                        </Stack> */}
                     </Box>
                 ) : (
                     <Box sx={{ maxWidth: 640 }}>
