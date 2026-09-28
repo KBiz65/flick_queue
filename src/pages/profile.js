@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import Head from 'next/head';
-import { Box, CircularProgress, Container, Typography, TextField, Button, FormControlLabel, Switch, Grid, Paper } from '@mui/material';
+import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
 import { setUser } from '../store/slices/authSlice';
 
@@ -96,7 +96,7 @@ const Profile = () => {
                 oldPassword: '',
             });
             dispatch(setUser({ firstName: responseData.firstName }));
-            showStatus('Profile updated successfully.', false);
+            showStatus('Changes saved.', false);
         } catch (error) {
             showStatus(error.response?.data?.message || 'Profile update failed. Please try again.', true);
         } finally {
@@ -142,7 +142,7 @@ const Profile = () => {
 
         // If there are any errors, prevent form submission
         if (Object.keys(errors).length > 0) {
-            showStatus('Please correct errors before submitting.', true);
+            showStatus('Fix the highlighted fields and try again.', true);
             return;
         }
 
@@ -156,7 +156,7 @@ const Profile = () => {
                 <Navbar />
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
                     {updateStatus.isError ? (
-                        <Typography color="error">{updateStatus.message}</Typography>
+                        <Alert severity="error">{updateStatus.message}</Alert>
                     ) : (
                         <CircularProgress />
                     )}
@@ -171,129 +171,134 @@ const Profile = () => {
                 <title>Profile | FlickQueue</title>
             </Head>
             <Navbar />
-            <Container component="main" maxWidth="sm">
-                <Paper elevation={3} sx={{ p: 4, mt: 4, mb: 2 }}>
-                    <Typography component="h1" variant="h5">
-                        Edit Profile
+            <Container component="main" maxWidth="sm" sx={{ py: 5 }}>
+                <Typography component="h1" variant="h3">
+                    Profile
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mt: 1 }}>
+                    Update your account details and preferences.
+                </Typography>
+
+                <Paper component="form" onSubmit={handleSubmit} noValidate sx={{ p: { xs: 3, sm: 4 }, mt: 4 }}>
+                    <Typography variant="h6" component="h2">
+                        Account
                     </Typography>
-                    <form onSubmit={handleSubmit}>
-                        <Grid container spacing={2}>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Username"
-                                    name="username"
-                                    type="text"
-                                    value={userData.username || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.username}
-                                    helperText={formErrors.username}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Email"
-                                    name="email"
-                                    type="email"
-                                    value={userData.email || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.email}
-                                    helperText={formErrors.email}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="First Name"
-                                    name="firstName"
-                                    type="text"
-                                    value={userData.firstName || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.firstName}
-                                    helperText={formErrors.firstName}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Last Name"
-                                    name="lastName"
-                                    type="text"
-                                    value={userData.lastName || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.lastName}
-                                    helperText={formErrors.lastName}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="New Password"
-                                    name="newPassword"
-                                    type="password"
-                                    value={userData.newPassword || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.newPassword}
-                                    helperText={formErrors.newPassword}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Confirm New Password"
-                                    name="confirmPassword"
-                                    type="password"
-                                    value={userData.confirmPassword || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.confirmPassword}
-                                    helperText={formErrors.confirmPassword}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Old Password"
-                                    name="oldPassword"
-                                    type="password"
-                                    value={userData.oldPassword || ''}
-                                    onChange={handleInputChange}
-                                    error={!!formErrors.oldPassword}
-                                    helperText={formErrors.oldPassword}
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={userData.allowAdultContent || false}
-                                            onChange={handleInputChange}
-                                            name="allowAdultContent"
-                                        />
-                                    }
-                                    label="Allow Adult Content"
-                                />
-                            </Grid>
-                            <Grid size={12}>
-                                <Button type="submit" fullWidth variant="contained" color="primary" disabled={isSaving}>
-                                    {isSaving ? 'Saving...' : 'Update Profile'}
-                                </Button>
-                            </Grid>
-                            {updateStatus.message && (
-                                <Box
-                                    sx={{
-                                        margin: '20px 0',
-                                        padding: '10px',
-                                        backgroundColor: updateStatus.isError ? 'error.main' : 'success.main',
-                                        color: 'white',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    {updateStatus.message}
-                                </Box>
-                            )}
-                        </Grid>
-                    </form>
+                    <Stack spacing={2.5} sx={{ mt: 2 }}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                            <TextField
+                                label="First name"
+                                name="firstName"
+                                value={userData.firstName || ''}
+                                onChange={handleInputChange}
+                                error={!!formErrors.firstName}
+                                helperText={formErrors.firstName}
+                            />
+                            <TextField
+                                label="Last name"
+                                name="lastName"
+                                value={userData.lastName || ''}
+                                onChange={handleInputChange}
+                                error={!!formErrors.lastName}
+                                helperText={formErrors.lastName}
+                            />
+                        </Stack>
+                        <TextField
+                            label="Username"
+                            name="username"
+                            autoComplete="username"
+                            value={userData.username || ''}
+                            onChange={handleInputChange}
+                            error={!!formErrors.username}
+                            helperText={formErrors.username}
+                        />
+                        <TextField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            value={userData.email || ''}
+                            onChange={handleInputChange}
+                            error={!!formErrors.email}
+                            helperText={formErrors.email}
+                        />
+                    </Stack>
+
+                    <Divider sx={{ my: 4 }} />
+
+                    <Typography variant="h6" component="h2">
+                        Change password
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        Leave these blank to keep your current password.
+                    </Typography>
+                    <Stack spacing={2.5} sx={{ mt: 2 }}>
+                        <TextField
+                            label="Current password"
+                            name="oldPassword"
+                            type="password"
+                            autoComplete="current-password"
+                            value={userData.oldPassword || ''}
+                            onChange={handleInputChange}
+                            error={!!formErrors.oldPassword}
+                            helperText={formErrors.oldPassword}
+                        />
+                        <TextField
+                            label="New password"
+                            name="newPassword"
+                            type="password"
+                            autoComplete="new-password"
+                            value={userData.newPassword || ''}
+                            onChange={handleInputChange}
+                            error={!!formErrors.newPassword}
+                            helperText={formErrors.newPassword || 'At least 8 characters'}
+                        />
+                        <TextField
+                            label="Confirm new password"
+                            name="confirmPassword"
+                            type="password"
+                            autoComplete="new-password"
+                            value={userData.confirmPassword || ''}
+                            onChange={handleInputChange}
+                            error={!!formErrors.confirmPassword}
+                            helperText={formErrors.confirmPassword}
+                        />
+                    </Stack>
+
+                    <Divider sx={{ my: 4 }} />
+
+                    <Typography variant="h6" component="h2">
+                        Content
+                    </Typography>
+                    <FormControlLabel
+                        sx={{ mt: 1, alignItems: 'flex-start', ml: 0, gap: 1.5 }}
+                        control={
+                            <Switch
+                                checked={userData.allowAdultContent || false}
+                                onChange={handleInputChange}
+                                name="allowAdultContent"
+                            />
+                        }
+                        label={
+                            <Box sx={{ pt: 0.75 }}>
+                                <Typography sx={{ fontWeight: 600 }}>Show adult titles</Typography>
+                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    Include adult movies and shows in search results and recommendations.
+                                </Typography>
+                            </Box>
+                        }
+                    />
+
+                    {updateStatus.message && (
+                        <Alert severity={updateStatus.isError ? 'error' : 'success'} sx={{ mt: 3 }}>
+                            {updateStatus.message}
+                        </Alert>
+                    )}
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+                        <Button type="submit" variant="contained" size="large" disabled={isSaving}>
+                            {isSaving ? 'Saving...' : 'Save changes'}
+                        </Button>
+                    </Box>
                 </Paper>
             </Container>
         </Box>

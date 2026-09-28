@@ -2,11 +2,30 @@ import React, { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { Box, ImageList, ImageListItem, IconButton, Tooltip, Typography } from '@mui/material';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import { openAddDialog } from '../store/slices/watchlistSlice';
+import { posterUrl } from '../lib/images';
+
+const POSTER_WIDTH = { xs: 130, sm: 170 };
+
+const arrowSx = (side) => ({
+    position: 'absolute',
+    top: { xs: 88, sm: 118 },
+    [side]: 4,
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    bgcolor: 'rgba(22, 18, 28, 0.85)',
+    border: 1,
+    borderColor: 'divider',
+    opacity: 0,
+    transition: 'opacity 0.2s',
+    '&:hover': { bgcolor: 'background.paper' },
+    '&:focus-visible': { opacity: 1 },
+    '@media (hover: none)': { display: 'none' },
+});
 
 // A horizontal, scrollable row of posters. Used on search results, the dashboard, and title pages.
 const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
@@ -29,98 +48,103 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
     }
 
     return (
-        <Box sx={{ display: 'flex', overflowX: 'hidden', alignItems: 'center' }}>
-          <IconButton aria-label="back_arrow" size="large" onClick={() => scrollRow(-1)}>
-            <ArrowBackIosNewIcon color="primary" />
-          </IconButton>
-          <ImageList ref={rowRef} sx={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', gap: '16px', '&::-webkit-scrollbar': { display: 'none' } }}>
-            {mediaArray.map((item) => {
-              const itemType = item.media_type || mediaType;
-
-              return (
-              <ImageListItem key={`${itemType}-${item.id}`} sx={{
-                  minWidth: '200px',
-                  height: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 1,
-                  position: 'relative',
-                  '&:hover .mediaActions': {
-                      opacity: 1,
-                  }
-              }}>
-                <Box component={Link} href={`/media/${itemType}/${item.id}`} sx={{
-                    width: '185px',
-                    height: '278px',
-                    overflow: 'hidden',
+        <Box sx={{ position: 'relative', '&:hover .rowArrow': { opacity: 1 } }}>
+            <IconButton className="rowArrow" aria-label="Scroll left" onClick={() => scrollRow(-1)} sx={arrowSx('left')}>
+                <ChevronLeftIcon />
+            </IconButton>
+            <Box
+                ref={rowRef}
+                sx={{
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    cursor: 'pointer',
-                }}>
-                  <Image
-                    src={item.poster_path ? `https://image.tmdb.org/t/p/w185${item.poster_path}` : '/ImageNotAvailable.png'}
-                    alt={item.title || item.name}
-                    width={185}
-                    height={278}
-                    style={{ border: '1px solid gray', borderRadius: '5px', objectFit: 'cover' }}
-                  />
-                  <Box className="mediaActions" sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      right: 0,
-                      opacity: 0,
-                      transition: 'opacity 0.3s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '100%', // Take up the full width of the image
-                      height: '100%', // Take up the full height of the image, making the whole image clickable
-                  }}>
-                    <Tooltip title="Add to Watchlist">
-                      <IconButton color="primary"
-                          aria-label={`Add ${item.title || item.name} to a watchlist`}
-                          onClick={(event) => {
-                              event.preventDefault();
-                              dispatch(openAddDialog({ tmdbId: item.id, type: itemType, title: item.title || item.name }));
-                          }}
-                          sx={{
-                              position: 'absolute',
-                              bottom: 16,
-                              right: 16,
-                              backgroundColor: '#080101',
-                              '&:hover': {
-                                  backgroundColor: '#080101', // Keeps the background color the same
-                                  color: '#ffffff',
-                              },
-                          }}>
-                        <AddIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-                <Typography gutterBottom variant="subtitle1" component="div" sx={{
-                    textAlign: 'center',
-                    maxWidth: '185px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'normal',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    lineHeight: '1.25',
-                }}>
-                  {item.title || item.name}
-                </Typography>
-              </ImageListItem>
-              );
-            })}
-          </ImageList>
-          <IconButton aria-label="forward_arrow" size="large" onClick={() => scrollRow(1)}>
-            <ArrowForwardIosIcon color="primary" />
-          </IconButton>
+                    gap: 2,
+                    overflowX: 'auto',
+                    scrollSnapType: 'x proximity',
+                    pb: 1,
+                    scrollbarWidth: 'none',
+                    '&::-webkit-scrollbar': { display: 'none' },
+                }}
+            >
+                {mediaArray.map((item) => {
+                    const itemType = item.media_type || mediaType;
+                    const title = item.title || item.name;
+                    const year = item.year || (item.release_date || item.first_air_date || '').slice(0, 4);
+
+                    return (
+                        <Box
+                            key={`${itemType}-${item.id}`}
+                            sx={{ width: POSTER_WIDTH, flexShrink: 0, scrollSnapAlign: 'start', '&:hover .mediaActions, &:focus-within .mediaActions': { opacity: 1 } }}
+                        >
+                            <Box
+                                component={Link}
+                                href={`/media/${itemType}/${item.id}`}
+                                sx={{
+                                    display: 'block',
+                                    position: 'relative',
+                                    aspectRatio: '2 / 3',
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    bgcolor: 'background.paper',
+                                    border: 1,
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Image
+                                    src={posterUrl(item.poster_path, 'w342')}
+                                    alt={title}
+                                    fill
+                                    sizes="(max-width: 600px) 130px, 170px"
+                                    style={{ objectFit: 'cover' }}
+                                />
+                                <Tooltip title="Add to watchlist">
+                                    <IconButton
+                                        className="mediaActions"
+                                        aria-label={`Add ${title} to a watchlist`}
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            dispatch(openAddDialog({ tmdbId: item.id, type: itemType, title }));
+                                        }}
+                                        sx={{
+                                            position: 'absolute',
+                                            bottom: 8,
+                                            right: 8,
+                                            opacity: 0,
+                                            transition: 'opacity 0.2s',
+                                            bgcolor: 'primary.main',
+                                            color: 'primary.contrastText',
+                                            '&:hover': { bgcolor: 'primary.main' },
+                                            '@media (hover: none)': { opacity: 1 },
+                                        }}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                            <Typography
+                                variant="subtitle2"
+                                title={title}
+                                sx={{
+                                    mt: 1,
+                                    lineHeight: 1.3,
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {title}
+                            </Typography>
+                            {year && (
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                    {year}
+                                </Typography>
+                            )}
+                        </Box>
+                    );
+                })}
+            </Box>
+            <IconButton className="rowArrow" aria-label="Scroll right" onClick={() => scrollRow(1)} sx={arrowSx('right')}>
+                <ChevronRightIcon />
+            </IconButton>
         </Box>
     );
 };

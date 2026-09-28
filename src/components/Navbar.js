@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import { AppBar, Avatar, Toolbar, Typography, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/router';
@@ -20,6 +19,7 @@ const Navbar = () => {
     const isSearchInvalid = useSelector((state) => state.search.isSearchInvalid);
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
     const isAuthChecked = useSelector((state) => state.auth.isAuthChecked);
+    const firstName = useSelector((state) => state.auth.firstName);
 
     const handleProfileMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -82,92 +82,79 @@ const Navbar = () => {
 
     return (
         <>
-        <AppBar position="fixed" sx={{ bgcolor: '#080101' }}>
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: { xs: NAVBAR_HEIGHT, sm: NAVBAR_HEIGHT } }}>
-                <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-start' }}>
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        onClick={navigateToHome}
-                        sx={{
-                            cursor: 'pointer',
-                            color: '#ffffff',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        FlickQueue
-                    </Typography>
-                </Box>
-                <TextField
-                    id="searchInput"
-                    size="small"
-                    placeholder={isSearchInvalid ? 'Please enter a search term' : 'Search for a movie or TV show'}
-                    value={searchItem}
-                    onChange={handleSearchChange}
-                    onKeyDown={handleSearchKeyDown}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <IconButton onClick={handleSearch} aria-label="search">
-                                        <SearchIcon sx={{ color: '#ffffff' }} />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    {searchItem && (
-                                        <IconButton onClick={clearSearchItem} aria-label="clear search">
-                                            <ClearIcon sx={{ color: '#ffffff' }} />
-                                        </IconButton>
-                                    )}
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
+        <AppBar position="fixed">
+            <Toolbar sx={{ gap: 2, minHeight: { xs: NAVBAR_HEIGHT, sm: NAVBAR_HEIGHT } }}>
+                <Typography
+                    component="button"
+                    onClick={navigateToHome}
                     sx={{
-                        width: '60%',
-                        paddingY: '5px',
-                        '& .MuiOutlinedInput-root': {
-                            '& fieldset': {
-                                borderColor: isSearchInvalid ? 'red' : '#ffffff', // Change the border color
-                            },
-                            '&:hover fieldset': {
-                                borderColor: isSearchInvalid ? 'red' : '#ffffff', // Change the border color on hover
-                            },
-                            '&.Mui-focused fieldset': {
-                                borderColor: isSearchInvalid ? 'red' : '#ffffff', // Change the border color when focused
-                            },
-                        },
-                        '& .MuiInputBase-input': {
-                            color: '#ffffff', // Text color
-                            '&:-webkit-autofill': {
-                                WebkitBoxShadow: '0 0 0 100px #080101 inset', // Match the AppBar's bgcolor
-                                WebkitTextFillColor: '#ffffff', // Ensure text color remains white
-                            }
-                        },
-                        '& .MuiInputBase-input::placeholder': {
-                            color: isSearchInvalid ? 'red' : '#ffffff',
-                            opacity: 1,
-                        },
+                        font: 'inherit',
+                        fontFamily: '"Big Shoulders Display Variable", sans-serif',
+                        fontWeight: 800,
+                        fontSize: '1.75rem',
+                        letterSpacing: '0.02em',
+                        color: 'text.primary',
+                        background: 'none',
+                        border: 0,
+                        cursor: 'pointer',
+                        flexShrink: 0,
                     }}
-                />
-                <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                    {isAuthChecked && !isAuthenticated && (
-                        <Button onClick={() => router.push('/')} sx={{ color: '#ffffff', textTransform: 'none' }}>
-                            Log In
+                >
+                    FlickQueue
+                </Typography>
+                <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+                    <TextField
+                        id="searchInput"
+                        size="small"
+                        placeholder={isSearchInvalid ? 'Type a title to search' : 'Search titles'}
+                        value={searchItem}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleSearchKeyDown}
+                        error={isSearchInvalid}
+                        fullWidth
+                        slotProps={{
+                            htmlInput: { 'aria-label': 'Search movies and TV shows' },
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <IconButton onClick={handleSearch} aria-label="search" edge="start" size="small">
+                                            <SearchIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchItem ? (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={clearSearchItem} aria-label="clear search" edge="end" size="small">
+                                            <ClearIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ) : null,
+                            },
+                        }}
+                        sx={{
+                            maxWidth: 560,
+                            '& .MuiOutlinedInput-root': { borderRadius: 999, backgroundColor: 'background.paper' },
+                            '& .MuiInputBase-input::placeholder': { color: isSearchInvalid ? 'error.main' : 'text.secondary', opacity: 1 },
+                        }}
+                    />
+                </Box>
+                <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'flex-end', minWidth: 40 }}>
+                    {isAuthChecked && !isAuthenticated && router.pathname !== '/' && (
+                        <Button variant="outlined" onClick={() => router.push('/')}>
+                            Log in
                         </Button>
                     )}
                     {isAuthenticated && (
                         <IconButton
-                            edge="end"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
                             onClick={handleProfileMenu}
-                            sx={{ color: '#ffffff' }}
+                            sx={{ p: 0.5 }}
                         >
-                            <AccountCircle />
+                            <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700, fontSize: '1rem' }}>
+                                {firstName ? firstName.charAt(0).toUpperCase() : '?'}
+                            </Avatar>
                         </IconButton>
                     )}
                 </Box>
@@ -189,7 +176,7 @@ const Navbar = () => {
                     <MenuItem onClick={navigateToDashboard}>Dashboard</MenuItem>
                     <MenuItem onClick={navigateToWatchlists}>My Watchlists</MenuItem>
                     <MenuItem onClick={navigateToProfile}>Profile</MenuItem>
-                    <MenuItem onClick={handleLogout}>Log Out</MenuItem>
+                    <MenuItem onClick={handleLogout}>Log out</MenuItem>
                 </Menu>
             </Toolbar>
         </AppBar>

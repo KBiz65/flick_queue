@@ -7,6 +7,8 @@ import { makeStore } from '../store/store';
 import { checkAuth } from '../store/slices/authSlice';
 import AddToWatchlistDialog from '../components/AddToWatchlistDialog';
 import theme from '../theme';
+import '@fontsource-variable/big-shoulders-display';
+import '@fontsource-variable/figtree';
 import '../styles/globals.css';
 
 function AuthCheck() {

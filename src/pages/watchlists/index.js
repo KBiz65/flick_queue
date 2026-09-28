@@ -42,12 +42,15 @@ const Watchlists = () => {
                 <title>My Watchlists | FlickQueue</title>
             </Head>
             <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 3, mb: 6 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
+            <Container maxWidth="xl" sx={{ py: 5 }}>
+                <Typography variant="h2" component="h1">
                     My Watchlists
                 </Typography>
+                <Typography sx={{ color: 'text.secondary', mt: 1 }}>
+                    Group titles however you like: date night, weekend binge, or classics to catch up on.
+                </Typography>
 
-                <Box component="form" onSubmit={handleCreate} sx={{ display: 'flex', gap: 1, maxWidth: 480, mt: 2 }}>
+                <Box component="form" onSubmit={handleCreate} sx={{ display: 'flex', gap: 1, maxWidth: 480, mt: 3 }}>
                     <TextField
                         size="small"
                         fullWidth
@@ -57,7 +60,7 @@ const Watchlists = () => {
                         slotProps={{ htmlInput: { maxLength: 100 } }}
                     />
                     <Button type="submit" variant="contained" disabled={!newListName.trim()} sx={{ whiteSpace: 'nowrap' }}>
-                        Create List
+                        Create list
                     </Button>
                 </Box>
                 {createError && <Alert severity="error" sx={{ mt: 2, maxWidth: 480 }}>{createError}</Alert>}

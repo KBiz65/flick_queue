@@ -2,16 +2,18 @@ import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useDispatch } from 'react-redux';
-import { Avatar, Box, Button, Chip, Container, Grid, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Navbar from '../../../components/Navbar';
 import MediaRow from '../../../components/MediaRow';
+import CastRow from '../../../components/CastRow';
 import { openAddDialog } from '../../../store/slices/watchlistSlice';
+import { posterUrl, tmdbImage } from '../../../lib/images';
+import { colors } from '../../../theme';
 import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
 
 const MEDIA_TYPES = ['movie', 'tv'];
-const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
 function formatDate(dateString) {
     if (!dateString) return null;
@@ -34,34 +36,6 @@ function plural(count, word) {
     return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
-const CastRow = ({ cast }) => (
-    <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
-        {cast.map((person) => (
-            <Box key={person.id} sx={{ minWidth: 120, maxWidth: 120, textAlign: 'center' }}>
-                {person.profilePath ? (
-                    <Image
-                        src={`${TMDB_IMAGE_BASE}/w185${person.profilePath}`}
-                        alt={person.name}
-                        width={120}
-                        height={180}
-                        style={{ borderRadius: '5px', objectFit: 'cover' }}
-                    />
-                ) : (
-                    <Avatar variant="rounded" sx={{ width: 120, height: 180, fontSize: 32 }}>
-                        {person.name.charAt(0)}
-                    </Avatar>
-                )}
-                <Typography variant="body2" sx={{ fontWeight: 600, mt: 1 }}>
-                    {person.name}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {person.character}
-                </Typography>
-            </Box>
-        ))}
-    </Box>
-);
-
 const MediaDetails = ({ media }) => {
     const dispatch = useDispatch();
     const facts = [media.releaseDate, media.length].filter(Boolean);
@@ -73,62 +47,61 @@ const MediaDetails = ({ media }) => {
                 <meta name="description" content={media.overview || media.title} />
             </Head>
             <Navbar />
-            {media.backdropPath && (
+
+            {/* Backdrop with a soft red glow, fading into the page */}
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: { xs: 420, md: 620 }, zIndex: -1, overflow: 'hidden' }}>
+                {media.backdropPath && (
+                    <Image src={tmdbImage(media.backdropPath, 'w1280')} alt="" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: 'center top' }} />
+                )}
                 <Box
                     sx={{
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 600,
-                        zIndex: -1,
-                        backgroundImage: `linear-gradient(to bottom, rgba(8, 1, 1, 0.6), #080101), url(${TMDB_IMAGE_BASE}/w1280${media.backdropPath})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center top',
+                        inset: 0,
+                        background: `radial-gradient(ellipse at 20% 0%, rgba(122, 30, 44, 0.45), transparent 60%),
+                            linear-gradient(0deg, ${colors.theater} 0%, rgba(22, 18, 28, 0.7) 55%, rgba(22, 18, 28, 0.45) 100%)`,
                     }}
                 />
-            )}
-            <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
-                <Grid container spacing={4}>
-                    <Grid size={{ xs: 12, md: 4, lg: 3 }} sx={{ display: 'flex', justifyContent: 'center' }}>
-                        <Image
-                            src={media.posterPath ? `${TMDB_IMAGE_BASE}/w500${media.posterPath}` : '/ImageNotAvailable.png'}
-                            alt={media.title}
-                            width={342}
-                            height={513}
-                            priority
-                            style={{ width: '100%', maxWidth: 342, height: 'auto', borderRadius: '8px', border: '1px solid gray' }}
-                        />
-                    </Grid>
+            </Box>
 
-                    <Grid size={{ xs: 12, md: 8, lg: 9 }}>
-                        <Typography variant="h3" component="h1">
+            <Container maxWidth="xl" sx={{ pt: { xs: 4, md: 12 }, pb: 8 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'end' }}>
+                    <Box
+                        sx={{
+                            position: 'relative',
+                            width: { xs: 200, md: 300 },
+                            aspectRatio: '2 / 3',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            border: 1,
+                            borderColor: 'divider',
+                            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
+                        }}
+                    >
+                        <Image src={posterUrl(media.posterPath, 'w500')} alt={media.title} fill priority sizes="(max-width: 900px) 200px, 300px" style={{ objectFit: 'cover' }} />
+                    </Box>
+
+                    <Box>
+                        <Typography variant="h1">
                             {media.title}
-                            {media.year && (
-                                <Typography component="span" variant="h4" sx={{ color: 'text.secondary', ml: 2 }}>
-                                    ({media.year})
-                                </Typography>
-                            )}
                         </Typography>
-
                         {media.tagline && (
-                            <Typography variant="subtitle1" sx={{ fontStyle: 'italic', color: 'text.secondary', mt: 1 }}>
+                            <Typography variant="h6" component="p" sx={{ color: 'text.secondary', fontWeight: 500, mt: 1.5 }}>
                                 {media.tagline}
                             </Typography>
                         )}
 
-                        <Stack direction="row" spacing={2} sx={{ mt: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Stack direction="row" sx={{ mt: 2.5, alignItems: 'center', flexWrap: 'wrap', columnGap: 3, rowGap: 1 }}>
                             {media.rating > 0 && (
-                                <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                                    <StarIcon sx={{ color: '#F5C518' }} />
-                                    <Typography variant="h6">{media.rating}</Typography>
+                                <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
+                                    <StarIcon sx={{ color: 'primary.main' }} />
+                                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>{media.rating}</Typography>
                                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                        ({media.voteCount.toLocaleString('en-US')} votes)
+                                        {media.voteCount.toLocaleString('en-US')} votes
                                     </Typography>
                                 </Stack>
                             )}
                             {facts.map((fact) => (
-                                <Typography key={fact} variant="body1" sx={{ color: 'text.secondary' }}>
+                                <Typography key={fact} sx={{ color: 'text.secondary' }}>
                                     {fact}
                                 </Typography>
                             ))}
@@ -137,41 +110,45 @@ const MediaDetails = ({ media }) => {
                         {media.genres.length > 0 && (
                             <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', rowGap: 1 }}>
                                 {media.genres.map((genre) => (
-                                    <Chip key={genre} label={genre} variant="outlined" color="primary" />
+                                    <Chip key={genre} label={genre} variant="outlined" />
                                 ))}
                             </Stack>
                         )}
 
                         <Button
                             variant="contained"
+                            size="large"
                             startIcon={<PlaylistAddIcon />}
                             onClick={() => dispatch(openAddDialog({ tmdbId: media.id, type: media.type, title: media.title }))}
                             sx={{ mt: 3 }}
                         >
-                            Add to Watchlist
+                            Add to watchlist
                         </Button>
+                    </Box>
+                </Box>
 
-                        <Typography variant="h6" sx={{ mt: 3 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 70ch) 1fr' }, gap: 6, mt: 6 }}>
+                    <Box>
+                        <Typography variant="h5" component="h2">
                             Overview
                         </Typography>
-                        <Typography variant="body1" sx={{ mt: 1, maxWidth: 900, lineHeight: 1.7 }}>
+                        <Typography sx={{ mt: 1.5, fontSize: '1.05rem', lineHeight: 1.7 }}>
                             {media.overview || 'No overview available.'}
                         </Typography>
-
-                        {media.creators.names.length > 0 && (
-                            <Box sx={{ mt: 3 }}>
-                                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                                    {media.creators.label}
-                                </Typography>
-                                <Typography variant="body1">{media.creators.names.join(', ')}</Typography>
-                            </Box>
-                        )}
-                    </Grid>
-                </Grid>
+                    </Box>
+                    {media.creators.names.length > 0 && (
+                        <Box>
+                            <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                                {media.creators.label}
+                            </Typography>
+                            <Typography sx={{ mt: 0.5, fontWeight: 600 }}>{media.creators.names.join(', ')}</Typography>
+                        </Box>
+                    )}
+                </Box>
 
                 {media.cast.length > 0 && (
-                    <Box sx={{ mt: 6 }}>
-                        <Typography variant="h5" gutterBottom>
+                    <Box sx={{ mt: 7 }}>
+                        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
                             Cast
                         </Typography>
                         <CastRow cast={media.cast} />
@@ -179,9 +156,9 @@ const MediaDetails = ({ media }) => {
                 )}
 
                 {media.recommendations.length > 0 && (
-                    <Box sx={{ mt: 6 }}>
-                        <Typography variant="h5" gutterBottom>
-                            More Like This
+                    <Box sx={{ mt: 7 }}>
+                        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
+                            More like this
                         </Typography>
                         <MediaRow mediaArray={media.recommendations} mediaType={media.type} emptyMessage="" />
                     </Box>
@@ -219,7 +196,7 @@ export async function getServerSideProps({ params, req }) {
         : [
             data.number_of_seasons ? plural(data.number_of_seasons, 'season') : null,
             data.number_of_episodes ? plural(data.number_of_episodes, 'episode') : null,
-        ].filter(Boolean).join(' · ') || null;
+        ].filter(Boolean).join(', ') || null;
 
     const creators = isMovie
         ? {

@@ -13,6 +13,18 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
+const Section = ({ title, action, children }) => (
+  <Box component="section" sx={{ mt: 6 }}>
+    <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 2 }}>
+      <Typography variant="h5" component="h2">
+        {title}
+      </Typography>
+      {action}
+    </Box>
+    {children}
+  </Box>
+);
+
 const Dashboard = ({ firstName, watchlists, recommendations, trendingMovies, trendingTV }) => {
   return (
     <>
@@ -20,70 +32,54 @@ const Dashboard = ({ firstName, watchlists, recommendations, trendingMovies, tre
         <title>Dashboard | FlickQueue</title>
       </Head>
       <Navbar />
-      <Container maxWidth="xl" sx={{ mt: 3, mb: 6, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Dashboard
-        </Typography>
-        <Typography variant="h6" component="h3">
-          Welcome, {firstName}!
+      <Container maxWidth="xl" sx={{ py: 5 }}>
+        <Typography variant="h2" component="h1">
+          Welcome back, {firstName}
         </Typography>
 
-        {/* Your Watchlists */}
-        <Box sx={{ mt: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Your Watchlists
-            </Typography>
+        <Section
+          title="Your watchlists"
+          action={
             <Button component={Link} href="/watchlists" size="small">
-              Manage
+              Manage lists
             </Button>
-          </Box>
+          }
+        >
           {watchlists.length === 0 ? (
             <Typography variant="body1" sx={{ color: 'text.secondary' }}>
               Tap + on any poster to start your first watchlist.
             </Typography>
           ) : (
-            <Box sx={{ display: 'flex', gap: 3, overflowX: 'auto', pb: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
               {watchlists.map((watchlist) => (
                 <WatchlistCard key={watchlist.id} watchlist={watchlist} />
               ))}
             </Box>
           )}
-        </Box>
+        </Section>
 
         {/* Recommended for You (only once the user has saved titles) */}
         {recommendations.length > 0 && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Recommended for You
-            </Typography>
+          <Section title="Recommended for you">
             <MediaRow mediaArray={recommendations} emptyMessage="" />
-          </Box>
+          </Section>
         )}
 
-        {/* Trending Movies */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Trending Movies This Week
-          </Typography>
+        <Section title="Trending movies this week">
           <MediaRow
             mediaArray={trendingMovies}
             mediaType="movie"
-            emptyMessage="Trending movies are unavailable right now. Please try again later."
+            emptyMessage="Trending movies aren't available right now. Try again in a few minutes."
           />
-        </Box>
+        </Section>
 
-        {/* Trending TV Shows */}
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Trending TV Shows This Week
-          </Typography>
+        <Section title="Trending TV shows this week">
           <MediaRow
             mediaArray={trendingTV}
             mediaType="tv"
-            emptyMessage="Trending TV shows are unavailable right now. Please try again later."
+            emptyMessage="Trending TV shows aren't available right now. Try again in a few minutes."
           />
-        </Box>
+        </Section>
       </Container>
     </>
   );

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import { setUser } from '../store/slices/authSlice';
 import { getSafeRedirect } from '../lib/redirect';
-import { Card, CardContent, CardActions, TextField, Button, Typography, Box } from '@mui/material';
+import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 
 export default function Signup({ setIsLoginView, from }) {
   const [signupError, setSignupError] = useState('');
@@ -49,107 +49,51 @@ export default function Signup({ setIsLoginView, from }) {
   };
 
   return (
-    <Box
-      sx={{
-        mt: 8,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <Card sx={{
-        minWidth: 275,
-        maxWidth: 400,
-        backgroundColor: '#262626',
-        color: '#ffffff',
-        '& .MuiOutlinedInput-root': {
-          '& fieldset': { borderColor: '#8C8C8C' },
-          '&:hover fieldset': { borderColor: '#8C8C8C' },
-          '&.Mui-focused fieldset': { borderColor: '#8C8C8C' },
-        },
-      }}>
-        <CardContent>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Sign Up
-          </Typography>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              id="firstname"
-              name="firstname"
-              label="First Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              id="lastname"
-              name="lastname"
-              label="Last Name"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              id="email"
-              name="email"
-              label="Email"
-              type="email"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required
-            />
-            <TextField
-              id="username"
-              name="username"
-              label="Username"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required
-              helperText="At least 6 characters"
-              slotProps={{ htmlInput: { minLength: 6 } }}
-            />
-            <TextField
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              required
-              error={!!signupError}
-              helperText={signupError || 'At least 8 characters'}
-              slotProps={{ htmlInput: { minLength: 8 } }}
-            />
-            <CardActions>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                disabled={isSubmitting}
-                sx={{ backgroundColor: '#6BAA75' }}
-              >
-                Sign Up
-              </Button>
-            </CardActions>
-          </form>
-        </CardContent>
-      </Card>
-      <Typography variant="body2" sx={{ mt: 2 }}>
-        Already have an account?
-        <Button
-          color="primary"
-          onClick={() => setIsLoginView(true)}
-          component="span"
-          sx={{ textTransform: 'none', color: '#6BAA75' }}
-        >
-          Log In
-        </Button>
+    <Paper sx={{ p: { xs: 3, sm: 4 }, border: 1, borderColor: 'divider', bgcolor: 'rgba(33, 27, 41, 0.92)', backdropFilter: 'blur(12px)' }}>
+      <Typography variant="h4" component="h1">
+        Create your account
       </Typography>
-    </Box>
+      <Typography sx={{ color: 'text.secondary', mt: 1 }}>
+        Save movies and shows to watchlists and track what you&apos;ve watched.
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Stack spacing={2.5}>
+          <Stack direction="row" spacing={2}>
+            <TextField id="firstname" name="firstname" label="First name" autoComplete="given-name" required />
+            <TextField id="lastname" name="lastname" label="Last name" autoComplete="family-name" required />
+          </Stack>
+          <TextField id="email" name="email" label="Email" type="email" autoComplete="email" required />
+          <TextField
+            id="username"
+            name="username"
+            label="Username"
+            autoComplete="username"
+            required
+            helperText="At least 6 characters"
+            slotProps={{ htmlInput: { minLength: 6 } }}
+          />
+          <TextField
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            autoComplete="new-password"
+            required
+            helperText="At least 8 characters"
+            slotProps={{ htmlInput: { minLength: 8 } }}
+          />
+          {signupError && <Alert severity="error">{signupError}</Alert>}
+          <Button type="submit" variant="contained" size="large" fullWidth disabled={isSubmitting}>
+            {isSubmitting ? 'Creating account...' : 'Create account'}
+          </Button>
+        </Stack>
+      </Box>
+      <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>
+        Already have an account?{' '}
+        <Link component="button" type="button" onClick={() => setIsLoginView(true)} sx={{ fontWeight: 700, verticalAlign: 'baseline' }}>
+          Log in
+        </Link>
+      </Typography>
+    </Paper>
   );
 }

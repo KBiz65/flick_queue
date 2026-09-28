@@ -41,34 +41,36 @@ const AllMedia = () => {
                 <title>{currentSearch ? `${currentSearch} | FlickQueue` : 'Search | FlickQueue'}</title>
             </Head>
             <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 3, display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ flexGrow: 1, overflowX: 'auto', overflowY: 'hidden' }}>
-                    <Typography variant="h4" component="h1" gutterBottom>
-                        Search Results for &quot;{currentSearch}&quot;
+            <Container maxWidth="xl" sx={{ py: 5 }}>
+                <Typography variant="h2" component="h1">
+                    Results for &ldquo;{currentSearch}&rdquo;
+                </Typography>
+                {status === 'loading' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
+                        <CircularProgress />
+                    </Box>
+                )}
+                {status === 'failed' && (
+                    <Typography variant="body1" color="error" sx={{ mt: 3 }}>
+                        {error || 'Search failed. Please try again.'}
                     </Typography>
-                    {status === 'loading' && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>
-                            <CircularProgress />
-                        </Box>
-                    )}
-                    {status === 'failed' && (
-                        <Typography variant="body1" color="error">
-                            {error || 'Search failed. Please try again.'}
-                        </Typography>
-                    )}
-                    {status === 'succeeded' && (
-                        <>
-                            <Typography variant="h6" gutterBottom>
+                )}
+                {status === 'succeeded' && (
+                    <>
+                        <Box component="section" sx={{ mt: 5 }}>
+                            <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
                                 Movies
                             </Typography>
-                            <MediaRow mediaArray={allMovies} emptyMessage="No movies found." />
-                            <Typography variant="h6" gutterBottom>
-                                TV Shows
+                            <MediaRow mediaArray={allMovies} emptyMessage="No movies match this search." />
+                        </Box>
+                        <Box component="section" sx={{ mt: 5 }}>
+                            <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
+                                TV shows
                             </Typography>
-                            <MediaRow mediaArray={allTV} emptyMessage="No TV shows found." />
-                        </>
-                    )}
-                </Box>
+                            <MediaRow mediaArray={allTV} emptyMessage="No TV shows match this search." />
+                        </Box>
+                    </>
+                )}
             </Container>
         </>
     );

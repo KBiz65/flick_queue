@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -8,71 +7,27 @@ import {
     Alert,
     Box,
     Button,
-    Card,
     CircularProgress,
     Container,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    IconButton,
+    LinearProgress,
     Stack,
     TextField,
     ToggleButton,
     ToggleButtonGroup,
-    Tooltip,
     Typography,
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import Navbar from '../../components/Navbar';
+import WatchlistItemCard from '../../components/WatchlistItemCard';
 
 const FILTERS = {
     all: () => true,
     toWatch: (item) => !item.watched,
     watched: (item) => item.watched,
 };
-
-const WatchlistItemCard = ({ item, onToggleWatched, onRemove, isBusy }) => (
-    <Card sx={{ width: 185, flexShrink: 0, opacity: item.watched ? 0.6 : 1, transition: 'opacity 0.3s' }}>
-        <Box component={Link} href={`/media/${item.type}/${item.tmdbId}`} sx={{ display: 'block', height: 278, position: 'relative' }}>
-            <Image
-                src={item.posterPath ? `https://image.tmdb.org/t/p/w185${item.posterPath}` : '/ImageNotAvailable.png'}
-                alt={item.title}
-                fill
-                sizes="185px"
-                style={{ objectFit: 'cover' }}
-            />
-        </Box>
-        <Box sx={{ p: 1 }}>
-            <Typography variant="subtitle2" noWrap title={item.title}>
-                {item.title}
-            </Typography>
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {[item.year, item.type === 'tv' ? 'TV' : 'Movie'].filter(Boolean).join(' · ')}
-                </Typography>
-                <Box>
-                    <Tooltip title={item.watched ? 'Mark as not watched' : 'Mark as watched'}>
-                        <span>
-                            <IconButton size="small" color="primary" disabled={isBusy} onClick={() => onToggleWatched(item)}>
-                                {item.watched ? <CheckCircleIcon fontSize="small" /> : <RadioButtonUncheckedIcon fontSize="small" />}
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                    <Tooltip title="Remove from list">
-                        <span>
-                            <IconButton size="small" disabled={isBusy} onClick={() => onRemove(item)}>
-                                <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                </Box>
-            </Stack>
-        </Box>
-    </Card>
-);
 
 const WatchlistDetail = () => {
     const router = useRouter();
@@ -198,13 +153,13 @@ const WatchlistDetail = () => {
                 <title>{`${watchlist.name} | FlickQueue`}</title>
             </Head>
             <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 3, mb: 6 }}>
-                <Button component={Link} href="/watchlists" size="small" sx={{ mb: 1 }}>
-                    &larr; My Watchlists
+            <Container maxWidth="xl" sx={{ py: 5 }}>
+                <Button component={Link} href="/watchlists" size="small" sx={{ mb: 2, ml: -1.5 }}>
+                    Back to My Watchlists
                 </Button>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}>
                     <Box>
-                        <Typography variant="h4" component="h1">
+                        <Typography variant="h2" component="h1">
                             {watchlist.name}
                         </Typography>
                         {watchlist.description && (
@@ -212,16 +167,24 @@ const WatchlistDetail = () => {
                                 {watchlist.description}
                             </Typography>
                         )}
-                        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
                             {items.length === 0 ? 'No titles yet' : `${watchedCount} of ${items.length} watched`}
                         </Typography>
+                        {items.length > 0 && (
+                            <LinearProgress
+                                variant="determinate"
+                                value={(watchedCount / items.length) * 100}
+                                sx={{ mt: 1, width: 220 }}
+                                aria-label="Watched progress"
+                            />
+                        )}
                     </Box>
                     <Stack direction="row" spacing={1}>
                         <Button variant="outlined" onClick={openRename}>
                             Rename
                         </Button>
                         <Button variant="outlined" color="error" onClick={() => setIsDeleteOpen(true)}>
-                            Delete List
+                            Delete list
                         </Button>
                     </Stack>
                 </Stack>
@@ -242,7 +205,7 @@ const WatchlistDetail = () => {
                     </ToggleButtonGroup>
                 )}
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 4 }}>
                     {visibleItems.map((item) => (
                         <WatchlistItemCard
                             key={item.id}
@@ -266,7 +229,7 @@ const WatchlistDetail = () => {
 
             <Dialog open={isRenameOpen} onClose={() => setIsRenameOpen(false)} fullWidth maxWidth="xs">
                 <Box component="form" onSubmit={handleRename}>
-                    <DialogTitle>Rename List</DialogTitle>
+                    <DialogTitle>Rename list</DialogTitle>
                     <DialogContent>
                         <TextField
                             label="Name"

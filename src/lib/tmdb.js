@@ -28,5 +28,6 @@ export function toMediaCard(item, fallbackType) {
         title: item.title || null,
         name: item.name || null,
         poster_path: item.poster_path || null,
+        year: (item.release_date || item.first_air_date || '').slice(0, 4) || null,
     };
 }

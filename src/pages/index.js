@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Navbar from '../components/Navbar';
+import HeroCarousel from '../components/HeroCarousel';
 import LoginForm from '../components/LoginForm';
 import SignupForm from '../components/SignupForm';
-import { Container, Grid, Typography } from '@mui/material';
+import { tmdbGet } from '@/lib/tmdb';
 
-export default function Home() {
+export default function Home({ slides }) {
     const [isLoginView, setIsLoginView] = useState(true);
     const router = useRouter();
     const { from } = router.query;
@@ -15,44 +16,50 @@ export default function Home() {
         <div>
             <Head>
                 <title>FlickQueue</title>
-                <meta name="description" content="Browse your favorite movies" />
+                <meta name="description" content="Save movies and TV shows to watchlists, track what you've watched, and get recommendations." />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Navbar />
-            <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-                <Grid
-                    container
-                    spacing={3}
-                    justifyContent="center"
-                    alignItems="center"
-                    style={{ minHeight: 'calc(100vh - 128px)' }}
-                >
-                    {/* Information Column */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <Typography variant="h3" component="h1" gutterBottom>
-                            Welcome to FlickQueue
-                        </Typography>
-                        <Typography variant="h5">Your ultimate movie and TV show tracking app.</Typography>
-                    </Grid>
-
-                    {/* Form Column */}
-                    <Grid
-                        size={{ xs: 12, md: 6 }}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {isLoginView ? (
-                            <LoginForm setIsLoginView={setIsLoginView} from={from} />
-                        ) : (
-                            <SignupForm setIsLoginView={setIsLoginView} from={from} />
-                        )}
-                    </Grid>
-                </Grid>
-            </Container>
+            <HeroCarousel slides={slides}>
+                {isLoginView ? (
+                    <LoginForm setIsLoginView={setIsLoginView} from={from} />
+                ) : (
+                    <SignupForm setIsLoginView={setIsLoginView} from={from} />
+                )}
+            </HeroCarousel>
         </div>
     );
+}
+
+function toSlide(item, type) {
+    return {
+        id: item.id,
+        type,
+        title: type === 'movie' ? item.title : item.name,
+        year: ((type === 'movie' ? item.release_date : item.first_air_date) || '').slice(0, 4) || null,
+        overview: item.overview || '',
+        rating: item.vote_average ? Math.round(item.vote_average * 10) / 10 : 0,
+        backdropPath: item.backdrop_path,
+    };
+}
+
+// This week's trending movies and shows, alternating, for the home page carousel
+export async function getServerSideProps() {
+    try {
+        const [movies, shows] = await Promise.all([tmdbGet('/trending/movie/week'), tmdbGet('/trending/tv/week')]);
+        const usable = (item) => item.backdrop_path && !item.adult;
+        const movieSlides = movies.results.filter(usable).map((item) => toSlide(item, 'movie'));
+        const showSlides = shows.results.filter(usable).map((item) => toSlide(item, 'tv'));
+
+        const slides = [];
+        for (let index = 0; index < Math.max(movieSlides.length, showSlides.length); index++) {
+            if (movieSlides[index]) slides.push(movieSlides[index]);
+            if (showSlides[index]) slides.push(showSlides[index]);
+        }
+
+        return { props: { slides } };
+    } catch (error) {
+        console.error('Failed to load trending titles for the home page:', error.message);
+        return { props: { slides: [] } };
+    }
 }

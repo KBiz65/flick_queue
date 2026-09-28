@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import { setUser } from '../store/slices/authSlice';
 import { getSafeRedirect } from '../lib/redirect';
-import { Card, CardContent, CardActions, TextField, Button, Typography, Box } from '@mui/material';
+import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 
 export default function LoginForm({ setIsLoginView, from }) {
     const [username, setUsername] = useState('');
@@ -41,94 +41,42 @@ export default function LoginForm({ setIsLoginView, from }) {
     };
 
     return (
-        <Box
-            sx={{
-                mt: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-        >
-            <Card sx={{
-                minWidth: 275,
-                maxWidth: 400,
-                backgroundColor: '#262626',
-                color: '#ffffff',
-                '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#8C8C8C', // Change the border color
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#8C8C8C', // Change the border color on hover
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#8C8C8C', // Change the border color when focused
-                    },
-                  },
-            }}>
-                <form onSubmit={handleSubmit}>
-                    <CardContent sx={{
-                        '& .MuiInputBase-input': {
-                            color: '#8C8C8C', // Text color
-                          },
-                          '& .MuiInputBase-input::placeholder': {
-                            color: '#8C8C8C',
-                            opacity: 1,
-                          },
-                    }}>
-                        <Typography variant="h5" component="h2" gutterBottom>
-                            Log In
-                        </Typography>
-                        <TextField
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={username}
-                            placeholder="username"
-                            autoComplete="username"
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                        <TextField
-                            type="password"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={password}
-                            placeholder="password"
-                            autoComplete="current-password"
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            error={!!loginError}
-                            helperText={loginError}
-                        />
-                    </CardContent>
-                    <CardActions>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            disabled={isSubmitting}
-                            sx={{
-                                backgroundColor: '#6BAA75'
-                            }}
-                        >
-                            Log In
-                        </Button>
-                    </CardActions>
-                </form>
-            </Card>
-            <Typography variant="body2" sx={{ mt: 2 }}>
-                Don&apos;t have an account?
-                <Button
-                    color="primary"
-                    onClick={() => setIsLoginView(false)}
-                    component="span"
-                    sx={{ textTransform: 'none', color: '#6BAA75' }}
-                >
-                    Sign Up
-                </Button>
+        <Paper sx={{ p: { xs: 3, sm: 4 }, border: 1, borderColor: 'divider', bgcolor: 'rgba(33, 27, 41, 0.92)', backdropFilter: 'blur(12px)' }}>
+            <Typography variant="h4" component="h1">
+                Welcome back
             </Typography>
-        </Box>
+            <Typography sx={{ color: 'text.secondary', mt: 1 }}>
+                Log in to see your watchlists and recommendations.
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Stack spacing={2.5}>
+                    <TextField
+                        label="Username"
+                        value={username}
+                        autoComplete="username"
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                    <TextField
+                        label="Password"
+                        type="password"
+                        value={password}
+                        autoComplete="current-password"
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    {loginError && <Alert severity="error">{loginError}</Alert>}
+                    <Button type="submit" variant="contained" size="large" fullWidth disabled={isSubmitting}>
+                        {isSubmitting ? 'Logging in...' : 'Log in'}
+                    </Button>
+                </Stack>
+            </Box>
+            <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>
+                New to FlickQueue?{' '}
+                <Link component="button" type="button" onClick={() => setIsLoginView(false)} sx={{ fontWeight: 700, verticalAlign: 'baseline' }}>
+                    Create an account
+                </Link>
+            </Typography>
+        </Paper>
     );
 }
