@@ -1,8 +1,9 @@
 import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, Link as MuiLink, Stack, Typography } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Navbar from '../../../components/Navbar';
@@ -164,12 +165,21 @@ const MediaDetails = ({ media, isLoggedIn }) => {
                         </Typography>
                     </Box>
                     <Stack spacing={4}>
-                        {media.creators.names.length > 0 && (
+                        {media.creators.people.length > 0 && (
                             <Box>
                                 <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                                     {media.creators.label}
                                 </Typography>
-                                <Typography sx={{ mt: 0.5, fontWeight: 600 }}>{media.creators.names.join(', ')}</Typography>
+                                <Typography sx={{ mt: 0.5, fontWeight: 600 }}>
+                                    {media.creators.people.map((person, index) => (
+                                        <React.Fragment key={person.id}>
+                                            {index > 0 && ', '}
+                                            <MuiLink component={Link} href={`/person/${person.id}`} color="inherit" underline="hover">
+                                                {person.name}
+                                            </MuiLink>
+                                        </React.Fragment>
+                                    ))}
+                                </Typography>
                             </Box>
                         )}
                         <WhereToWatch whereToWatch={media.whereToWatch} canChangeRegion={isLoggedIn} />
@@ -231,11 +241,13 @@ export async function getServerSideProps({ params, req }) {
     const creators = isMovie
         ? {
             label: 'Directed by',
-            names: (data.credits?.crew || []).filter((person) => person.job === 'Director').map((person) => person.name),
+            people: (data.credits?.crew || [])
+                .filter((person) => person.job === 'Director')
+                .map((person) => ({ id: person.id, name: person.name })),
         }
         : {
             label: 'Created by',
-            names: (data.created_by || []).map((person) => person.name),
+            people: (data.created_by || []).map((person) => ({ id: person.id, name: person.name })),
         };
 
     const media = {
