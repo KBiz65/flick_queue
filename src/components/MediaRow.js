@@ -101,6 +101,7 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
                                         aria-label={`Add ${title} to a watchlist`}
                                         onClick={(event) => {
                                             event.preventDefault();
+                                            event.currentTarget.blur();
                                             dispatch(openAddDialog({ tmdbId: item.id, type: itemType, title }));
                                         }}
                                         sx={{

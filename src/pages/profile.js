@@ -6,6 +6,7 @@ import Head from 'next/head';
 import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, MenuItem, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
 import { setUser } from '../store/slices/authSlice';
+import { LIMITS, emailError, nameError, passwordError, usernameError } from '../lib/validation';
 
 const Profile = () => {
     const router = useRouter();
@@ -129,14 +130,17 @@ const Profile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        let errors = {};
+        const errors = {
+            firstName: nameError(userData.firstName, 'First name'),
+            lastName: nameError(userData.lastName, 'Last name'),
+            username: usernameError(userData.username),
+            email: emailError(userData.email),
+        };
 
         // Only treat this as a password change when a new password was typed.
         // (Browsers often auto-fill the current password field, which on its own shouldn't block saving.)
         if (userData.newPassword || userData.confirmPassword) {
-            if (userData.newPassword.length < 8) {
-                errors.newPassword = 'New password must be at least 8 characters';
-            }
+            errors.newPassword = passwordError(userData.newPassword);
 
             if (userData.newPassword !== userData.confirmPassword) {
                 errors.confirmPassword = 'New passwords do not match';
@@ -147,16 +151,9 @@ const Profile = () => {
             }
         }
 
-        if (!userData.username) errors.username = 'Username cannot be blank';
-        if (!userData.email) errors.email = 'Email cannot be blank';
-        if (!userData.firstName) errors.firstName = 'First name cannot be blank';
-        if (!userData.lastName) errors.lastName = 'Last name cannot be blank';
-
-        // Update the formErrors state
         setFormErrors(errors);
 
-        // If there are any errors, prevent form submission
-        if (Object.keys(errors).length > 0) {
+        if (Object.values(errors).some(Boolean)) {
             showStatus('Fix the highlighted fields and try again.', true);
             return;
         }
@@ -207,6 +204,7 @@ const Profile = () => {
                                 onChange={handleInputChange}
                                 error={!!formErrors.firstName}
                                 helperText={formErrors.firstName}
+                                slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }}
                             />
                             <TextField
                                 label="Last name"
@@ -215,6 +213,7 @@ const Profile = () => {
                                 onChange={handleInputChange}
                                 error={!!formErrors.lastName}
                                 helperText={formErrors.lastName}
+                                slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }}
                             />
                         </Stack>
                         <TextField
@@ -225,6 +224,7 @@ const Profile = () => {
                             onChange={handleInputChange}
                             error={!!formErrors.username}
                             helperText={formErrors.username}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.usernameMax } }}
                         />
                         <TextField
                             label="Email"
@@ -235,6 +235,7 @@ const Profile = () => {
                             onChange={handleInputChange}
                             error={!!formErrors.email}
                             helperText={formErrors.email}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.emailMax } }}
                         />
                     </Stack>
 
@@ -266,6 +267,7 @@ const Profile = () => {
                             onChange={handleInputChange}
                             error={!!formErrors.newPassword}
                             helperText={formErrors.newPassword || 'At least 8 characters'}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.passwordMax } }}
                         />
                         <TextField
                             label="Confirm new password"
@@ -276,6 +278,7 @@ const Profile = () => {
                             onChange={handleInputChange}
                             error={!!formErrors.confirmPassword}
                             helperText={formErrors.confirmPassword}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.passwordMax } }}
                         />
                     </Stack>
 

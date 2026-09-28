@@ -18,9 +18,15 @@ CREATE TABLE users (
     watch_region VARCHAR(2) NOT NULL DEFAULT 'US',
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    CONSTRAINT users_username_key UNIQUE (username),
-    CONSTRAINT users_email_key UNIQUE (email)
+    CONSTRAINT users_username_format CHECK (username ~ '^[A-Za-z0-9_.]{6,30}$'),
+    CONSTRAINT users_first_name_length CHECK (char_length(first_name) <= 50),
+    CONSTRAINT users_last_name_length CHECK (char_length(last_name) <= 50),
+    CONSTRAINT users_email_length CHECK (char_length(email) <= 254)
 );
+
+-- Case-insensitive, so "KevinB" and "kevinb" can't both exist
+CREATE UNIQUE INDEX users_username_lower_key ON users (lower(username));
+CREATE UNIQUE INDEX users_email_lower_key ON users (lower(email));
 
 CREATE TABLE media (
     media_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -63,6 +69,8 @@ CREATE TABLE watchlists (
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     CONSTRAINT watchlists_user_name_key UNIQUE (user_id, name),
+    CONSTRAINT watchlists_name_length CHECK (char_length(name) <= 100),
+    CONSTRAINT watchlists_description_length CHECK (char_length(description) <= 500),
     CONSTRAINT watchlists_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 

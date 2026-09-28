@@ -8,12 +8,14 @@ export class ApiError extends Error {
 }
 
 const UNIQUE_VIOLATION_MESSAGES = {
-    users_username_key: 'That username is already taken.',
-    users_email_key: 'That email is already in use.',
+    users_username_lower_key: 'That username is already taken.',
+    users_email_lower_key: 'That email is already in use.',
     watchlists_user_name_key: 'You already have a list with that name.',
     watchlistitems_watchlist_media_key: 'That title is already in this list.',
     ratings_user_media_key: 'You already rated this title.',
 };
+
+const READ_ONLY_METHODS = new Set(['GET', 'HEAD']);
 
 // Axios errors carry the request config, including the TMDB api_key, so log only a summary of them
 function describeError(error) {
@@ -23,6 +25,26 @@ function describeError(error) {
     return error;
 }
 
+// Browsers send Origin on cross-site requests. If it's there, it has to be this site.
+function isSameOrigin(req) {
+    const origin = req.headers.origin;
+    if (!origin) return true;
+    try {
+        return new URL(origin).host === req.headers.host;
+    } catch {
+        return false;
+    }
+}
+
+// The app only ever sends JSON. Plain HTML forms from other sites can't, so anything else is rejected.
+function isJsonOrEmpty(req) {
+    const contentType = req.headers['content-type'];
+    if (contentType) {
+        return contentType.split(';')[0].trim().toLowerCase() === 'application/json';
+    }
+    return !Number(req.headers['content-length']) && !req.headers['transfer-encoding'];
+}
+
 export function createHandler(methods, { auth = true } = {}) {
     return async function handler(req, res) {
         const method = methods[req.method];
@@ -30,6 +52,15 @@ export function createHandler(methods, { auth = true } = {}) {
         if (!method) {
             res.setHeader('Allow', Object.keys(methods));
             return res.status(405).json({ message: 'Method not allowed.' });
+        }
+
+        if (!READ_ONLY_METHODS.has(req.method)) {
+            if (!isSameOrigin(req)) {
+                return res.status(403).json({ message: 'Request blocked.' });
+            }
+            if (!isJsonOrEmpty(req)) {
+                return res.status(415).json({ message: 'Requests must be sent as JSON.' });
+            }
         }
 
         if (auth) {

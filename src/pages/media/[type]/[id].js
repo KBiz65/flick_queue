@@ -147,7 +147,10 @@ const MediaDetails = ({ media, isLoggedIn }) => {
                             variant="contained"
                             size="large"
                             startIcon={<PlaylistAddIcon />}
-                            onClick={() => dispatch(openAddDialog({ tmdbId: media.id, type: media.type, title: media.title }))}
+                            onClick={(event) => {
+                                event.currentTarget.blur();
+                                dispatch(openAddDialog({ tmdbId: media.id, type: media.type, title: media.title }));
+                            }}
                             sx={{ mt: 3 }}
                         >
                             Add to watchlist

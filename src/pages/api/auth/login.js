@@ -1,36 +1,30 @@
 import pool from '@/lib/db';
+import { ApiError, createHandler } from '@/lib/api';
 import { DUMMY_PASSWORD_HASH, verifyPassword, setAuthCookie } from '@/lib/auth';
 
-export default async function login(req, res) {
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' });
-    }
-
+// Usernames match regardless of capitalization ("kevinb" logs into "KevinB")
+async function login(req, res) {
     const { username, password } = req.body;
 
-    // Basic validation
-    if (!username || !password) {
-        return res.status(422).json({ message: 'Invalid input' });
+    if (typeof username !== 'string' || typeof password !== 'string' || !username.trim() || !password) {
+        throw new ApiError(422, 'Enter your username and password.');
     }
 
-    try {
-        const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
+    const { rows } = await pool.query(
+        'SELECT user_id, first_name, password_hash FROM users WHERE lower(username) = lower($1)',
+        [username.trim()]
+    );
 
-        const user = rows[0];
-        const passwordMatches = await verifyPassword(password, user ? user.password_hash : DUMMY_PASSWORD_HASH);
-        const isValid = Boolean(user) && passwordMatches;
+    const user = rows[0];
+    const passwordMatches = await verifyPassword(password, user ? user.password_hash : DUMMY_PASSWORD_HASH);
 
-        if (!isValid) {
-            return res.status(401).json({ message: 'Incorrect username or password.' });
-        }
-
-        // Set HTTP-only auth cookie
-        setAuthCookie(res, user.user_id);
-
-        res.status(200).json({ firstName: user.first_name });
-    } catch (error) {
-        console.error('Login failed:', error);
-        res.status(500).json({ message: 'Something went wrong.' });
+    if (!user || !passwordMatches) {
+        throw new ApiError(401, 'Incorrect username or password.');
     }
+
+    setAuthCookie(res, user.user_id);
+
+    res.status(200).json({ firstName: user.first_name });
 }
+
+export default createHandler({ POST: login }, { auth: false });

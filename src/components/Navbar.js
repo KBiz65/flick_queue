@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppBar, Avatar, Toolbar, Typography, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem } from '@mui/material';
+import { Alert, AppBar, Avatar, Toolbar, Typography, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem, Snackbar } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/router';
@@ -12,6 +12,7 @@ const NAVBAR_HEIGHT = 64;
 
 const Navbar = () => {
     const [anchorEl, setAnchorEl] = useState(null);
+    const [logoutFailed, setLogoutFailed] = useState(false);
     const open = Boolean(anchorEl);
     const router = useRouter();
     const dispatch = useDispatch();
@@ -53,7 +54,11 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         handleClose();
-        await dispatch(logout());
+        const result = await dispatch(logout());
+        if (logout.rejected.match(result)) {
+            setLogoutFailed(true);
+            return;
+        }
         router.push('/');
     };
 
@@ -181,6 +186,11 @@ const Navbar = () => {
             </Toolbar>
         </AppBar>
         <Toolbar sx={{ minHeight: { xs: NAVBAR_HEIGHT, sm: NAVBAR_HEIGHT } }} />
+        <Snackbar open={logoutFailed} autoHideDuration={6000} onClose={() => setLogoutFailed(false)}>
+            <Alert severity="error" onClose={() => setLogoutFailed(false)}>
+                Couldn&apos;t log out. Please try again.
+            </Alert>
+        </Snackbar>
         </>
     );
 };

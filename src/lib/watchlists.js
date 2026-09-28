@@ -1,5 +1,6 @@
 import pool from './db';
 import { ApiError } from './api';
+import { LIMITS } from './validation';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -32,8 +33,11 @@ export function validateWatchlistInput(body) {
     if (!name) {
         throw new ApiError(422, 'Please give your list a name.');
     }
-    if (name.length > 100) {
-        throw new ApiError(422, 'List names can be up to 100 characters.');
+    if (name.length > LIMITS.listNameMax) {
+        throw new ApiError(422, `List names can be up to ${LIMITS.listNameMax} characters.`);
+    }
+    if (description.length > LIMITS.listDescriptionMax) {
+        throw new ApiError(422, `Descriptions can be up to ${LIMITS.listDescriptionMax} characters.`);
     }
 
     return { name, description: description || null };

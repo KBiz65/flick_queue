@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import Navbar from '../../components/Navbar';
 import WatchlistItemCard from '../../components/WatchlistItemCard';
+import { LIMITS } from '../../lib/validation';
 
 const FILTERS = {
     all: () => true,
@@ -237,7 +238,7 @@ const WatchlistDetail = () => {
                             margin="dense"
                             value={renameValues.name}
                             onChange={(event) => setRenameValues({ ...renameValues, name: event.target.value })}
-                            slotProps={{ htmlInput: { maxLength: 100 } }}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.listNameMax } }}
                         />
                         <TextField
                             label="Description (optional)"
@@ -247,6 +248,7 @@ const WatchlistDetail = () => {
                             minRows={2}
                             value={renameValues.description}
                             onChange={(event) => setRenameValues({ ...renameValues, description: event.target.value })}
+                            slotProps={{ htmlInput: { maxLength: LIMITS.listDescriptionMax } }}
                         />
                     </DialogContent>
                     <DialogActions>

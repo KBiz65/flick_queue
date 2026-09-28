@@ -1,12 +1,9 @@
+import { createHandler } from '@/lib/api';
 import { clearAuthCookie } from '@/lib/auth';
 
-export default function logout(req, res) {
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' });
-    }
-
+async function logout(req, res) {
     clearAuthCookie(res);
-
     res.status(200).json({ message: 'Logged out' });
 }
+
+export default createHandler({ POST: logout }, { auth: false });
