@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import Head from 'next/head';
+import SeoHead from '../components/SeoHead';
 import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, MenuItem, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
 import AdultConfirmDialog from '../components/AdultConfirmDialog';
@@ -200,9 +200,7 @@ const Profile = () => {
 
     return (
         <Box>
-            <Head>
-                <title>Profile | FlickQueue</title>
-            </Head>
+            <SeoHead title="Profile" />
             <Navbar />
             <Container component="main" maxWidth="sm" sx={{ py: 5 }}>
                 <Typography component="h1" variant="h3">

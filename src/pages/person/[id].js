@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Head from 'next/head';
+import SeoHead from '../../components/SeoHead';
 import Image from 'next/image';
 import { Avatar, Box, Button, Container, Stack, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
@@ -53,10 +53,15 @@ const PersonDetails = ({ person }) => {
 
     return (
         <>
-            <Head>
-                <title>{`${person.name} | FlickQueue`}</title>
-                <meta name="description" content={person.biography.slice(0, 160) || person.name} />
-            </Head>
+            <SeoHead
+                title={person.name}
+                description={person.biography || `${person.name} on FlickQueue`}
+                path={`/person/${person.id}`}
+                type="profile"
+                image={tmdbImage(person.profilePath, 'h632')}
+                imageAlt={person.name}
+                card="summary"
+            />
             <Navbar />
             <Container maxWidth="xl" sx={{ py: 6 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px minmax(0, 1fr)' }, gap: { xs: 4, md: 6 } }}>

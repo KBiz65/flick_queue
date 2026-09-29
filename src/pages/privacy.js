@@ -4,7 +4,12 @@ import { Link as MuiLink, Typography } from '@mui/material';
 import LegalPage, { LEGAL_CONTACT_EMAIL, Section } from '../components/LegalPage';
 
 const Privacy = () => (
-    <LegalPage title="Privacy Policy" lastUpdated="September 28, 2026">
+    <LegalPage
+        title="Privacy Policy"
+        description="What FlickQueue collects, how it is used, and how to delete your account and data."
+        path="/privacy"
+        lastUpdated="September 28, 2026"
+    >
         <Typography>
             FlickQueue is a free movie and TV watchlist app operated by Timberfoot Tech LLC, a Nevada company
             (&quot;we&quot; or &quot;us&quot;). This policy explains what we collect, why, and the choices you have.

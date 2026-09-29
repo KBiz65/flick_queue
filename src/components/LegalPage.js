@@ -1,16 +1,14 @@
 import React from 'react';
-import Head from 'next/head';
+import SeoHead from './SeoHead';
 import { Box, Container, Typography } from '@mui/material';
 import Navbar from './Navbar';
 
 export const LEGAL_CONTACT_EMAIL = 'support@timberfoottech.com';
 
 // Shared layout for the privacy policy and terms of use
-const LegalPage = ({ title, lastUpdated, children }) => (
+const LegalPage = ({ title, description, path, lastUpdated, children }) => (
     <Box>
-        <Head>
-            <title>{`${title} | FlickQueue`}</title>
-        </Head>
+        <SeoHead title={title} description={description} path={path} />
         <Navbar />
         <Container component="main" maxWidth="md" sx={{ py: 5 }}>
             <Typography component="h1" variant="h3">

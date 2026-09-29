@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Head from 'next/head';
+import SeoHead from '../../components/SeoHead';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
@@ -38,9 +38,7 @@ const Watchlists = () => {
 
     return (
         <>
-            <Head>
-                <title>My Watchlists | FlickQueue</title>
-            </Head>
+            <SeoHead title="My Watchlists" />
             <Navbar />
             <Container maxWidth="xl" sx={{ py: 5 }}>
                 <Typography variant="h2" component="h1">

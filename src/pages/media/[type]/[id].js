@@ -1,5 +1,5 @@
 import React from 'react';
-import Head from 'next/head';
+import SeoHead from '../../../components/SeoHead';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
@@ -70,10 +70,15 @@ const MediaDetails = ({ media, isLoggedIn }) => {
 
     return (
         <>
-            <Head>
-                <title>{`${media.title}${media.year ? ` (${media.year})` : ''} | FlickQueue`}</title>
-                <meta name="description" content={media.overview || media.title} />
-            </Head>
+            <SeoHead
+                title={`${media.title}${media.year ? ` (${media.year})` : ''}`}
+                description={media.overview || `${media.title} on FlickQueue`}
+                path={`/media/${media.type}/${media.id}`}
+                type={media.type === 'movie' ? 'video.movie' : 'video.tv_show'}
+                image={tmdbImage(media.backdropPath, 'w1280') || tmdbImage(media.posterPath, 'w500')}
+                imageAlt={media.title}
+                card={media.backdropPath ? 'summary_large_image' : 'summary'}
+            />
             <Navbar />
 
             {/* Backdrop with a soft red glow, fading into the page */}

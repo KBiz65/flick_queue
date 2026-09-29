@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import SeoHead from '../components/SeoHead';
 import Navbar from '../components/Navbar';
 import MediaRow from '../components/MediaRow';
 import Container from '@mui/material/Container';
@@ -37,9 +37,7 @@ const AllMedia = () => {
 
     return (
         <>
-            <Head>
-                <title>{currentSearch ? `${currentSearch} | FlickQueue` : 'Search | FlickQueue'}</title>
-            </Head>
+            <SeoHead title={currentSearch || 'Search'} />
             <Navbar />
             <Container maxWidth="xl" sx={{ py: 5 }}>
                 <Typography variant="h2" component="h1">

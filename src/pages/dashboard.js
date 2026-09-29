@@ -1,5 +1,5 @@
 import React from 'react';
-import Head from 'next/head';
+import SeoHead from '../components/SeoHead';
 import Link from 'next/link';
 import pool from '@/lib/db';
 import { getUserIdFromCookieHeader } from '@/lib/auth';
@@ -28,9 +28,7 @@ const Section = ({ title, action, children }) => (
 const Dashboard = ({ firstName, watchlists, recommendations, trendingMovies, trendingTV }) => {
   return (
     <>
-      <Head>
-        <title>Dashboard | FlickQueue</title>
-      </Head>
+      <SeoHead title="Dashboard" />
       <Navbar />
       <Container maxWidth="xl" sx={{ py: 5 }}>
         <Typography variant="h2" component="h1">

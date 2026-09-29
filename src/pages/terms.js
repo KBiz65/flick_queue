@@ -4,7 +4,12 @@ import { Link as MuiLink, Typography } from '@mui/material';
 import LegalPage, { LEGAL_CONTACT_EMAIL, Section } from '../components/LegalPage';
 
 const Terms = () => (
-    <LegalPage title="Terms of Use" lastUpdated="September 28, 2026">
+    <LegalPage
+        title="Terms of Use"
+        description="The terms for using FlickQueue, a free movie and TV watchlist app by Timberfoot Tech LLC."
+        path="/terms"
+        lastUpdated="September 28, 2026"
+    >
         <Typography>
             These terms cover your use of FlickQueue, a free movie and TV watchlist app operated by Timberfoot Tech
             LLC (&quot;we&quot; or &quot;us&quot;). By creating an account or using the app, you agree to them.

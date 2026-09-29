@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import SeoHead from '../components/SeoHead';
 import Navbar from '../components/Navbar';
 import HeroCarousel from '../components/HeroCarousel';
 import LoginForm from '../components/LoginForm';
@@ -14,11 +14,10 @@ export default function Home({ slides, startIndex }) {
 
     return (
         <div>
-            <Head>
-                <title>FlickQueue</title>
-                <meta name="description" content="Save movies and TV shows to watchlists, track what you've watched, and get recommendations." />
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
+            <SeoHead
+                path="/"
+                description="Save movies and TV shows to watchlists, track what you've watched, see where to stream, and get recommendations."
+            />
             <Navbar />
             <HeroCarousel slides={slides} startIndex={startIndex}>
                 {isLoginView ? (
