@@ -53,10 +53,8 @@ export const searchSlice = createSlice({
 // Actions
 export const { setSearchItem, setIsSearchInvalid } = searchSlice.actions;
 
-// Selector
-export const selectSearchItem = (state) => state.search.searchItem;
+// Selectors
 export const selectSearchData = (state) => state.search.searchData;
-export const selectIsSearchInvalid = (state) => state.search.isSearchInvalid;
 export const selectSearchStatus = (state) => state.search.status;
 export const selectSearchError = (state) => state.search.error;
 

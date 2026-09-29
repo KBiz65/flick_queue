@@ -6,6 +6,7 @@ import Navbar from '../../components/Navbar';
 import MediaRow from '../../components/MediaRow';
 import Filmography from '../../components/Filmography';
 import { tmdbImage } from '../../lib/images';
+import { formatDate } from '@/lib/format';
 import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
 
 const BIO_PREVIEW_LENGTH = 700;
@@ -20,11 +21,6 @@ const DEPARTMENT_LABELS = {
     Editing: 'Editing',
     Creator: 'Creating',
 };
-
-function formatDate(dateString) {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-}
 
 function yearsBetween(start, end) {
     const from = new Date(start);

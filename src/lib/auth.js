@@ -4,14 +4,20 @@ import { parse, serialize } from 'cookie';
 
 export const AUTH_COOKIE = 'FlickQueueAuth';
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7;
+const JWT_ALGORITHM = 'HS256';
+export const MIN_JWT_SECRET_LENGTH = 32;
 
 // Checked when a username doesn't exist, so a failed login takes the same time whether or not the user is real
 export const DUMMY_PASSWORD_HASH = '$2b$10$m4./rTxawdqOu1HTXdIW0.Fgg9yP8n9h1PKkc1FKWtDqS7rMbC35q';
 
-function getSecret() {
+// Also checked once at server startup (src/instrumentation.js), so a bad secret shows up in the logs right away
+export function getSecret() {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
         throw new Error('JWT_SECRET is not set');
+    }
+    if (secret.length < MIN_JWT_SECRET_LENGTH) {
+        throw new Error(`JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters`);
     }
     return secret;
 }
@@ -25,13 +31,13 @@ export async function verifyPassword(password, passwordHash) {
 }
 
 export function signToken(userId) {
-    return jwt.sign({}, getSecret(), { subject: userId, expiresIn: TOKEN_TTL_SECONDS });
+    return jwt.sign({}, getSecret(), { subject: userId, expiresIn: TOKEN_TTL_SECONDS, algorithm: JWT_ALGORITHM });
 }
 
 export function verifyToken(token) {
     if (!token) return null;
     try {
-        return jwt.verify(token, getSecret()).sub;
+        return jwt.verify(token, getSecret(), { algorithms: [JWT_ALGORITHM] }).sub;
     } catch {
         return null;
     }

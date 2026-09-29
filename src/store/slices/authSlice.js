@@ -21,6 +21,13 @@ const initialState = {
   isAuthChecked: false,
 };
 
+// Shared by logout and an expired or missing session
+function clearUser(state) {
+  state.isAuthenticated = false;
+  state.isAuthChecked = true;
+  state.firstName = '';
+}
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -30,28 +37,19 @@ export const authSlice = createSlice({
       state.isAuthChecked = true;
       state.firstName = action.payload.firstName;
     },
-    logoutUser(state) {
-      state.isAuthenticated = false;
-      state.isAuthChecked = true;
-      state.firstName = '';
-    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(checkAuth.fulfilled, (state, action) => {
         authSlice.caseReducers.setUser(state, action);
       })
-      .addCase(checkAuth.rejected, (state) => {
-        authSlice.caseReducers.logoutUser(state);
-      })
-      .addCase(logout.fulfilled, (state) => {
-        authSlice.caseReducers.logoutUser(state);
-      });
+      .addCase(checkAuth.rejected, clearUser)
+      .addCase(logout.fulfilled, clearUser);
   },
 });
 
 // Export actions
-export const { setUser, logoutUser } = authSlice.actions;
+export const { setUser } = authSlice.actions;
 
 // Export the reducer
 export default authSlice.reducer;

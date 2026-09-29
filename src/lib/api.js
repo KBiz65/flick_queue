@@ -12,7 +12,6 @@ const UNIQUE_VIOLATION_MESSAGES = {
     users_email_lower_key: 'That email is already in use.',
     watchlists_user_name_key: 'You already have a list with that name.',
     watchlistitems_watchlist_media_key: 'That title is already in this list.',
-    ratings_user_media_key: 'You already rated this title.',
 };
 
 const READ_ONLY_METHODS = new Set(['GET', 'HEAD']);

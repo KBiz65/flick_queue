@@ -15,18 +15,9 @@ import { posterUrl, tmdbImage } from '../../../lib/images';
 import { colors } from '../../../theme';
 import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
 import { getUserIdFromCookieHeader } from '@/lib/auth';
+import { formatDate } from '@/lib/format';
 
 const MEDIA_TYPES = ['movie', 'tv'];
-
-function formatDate(dateString) {
-    if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'UTC',
-    });
-}
 
 function formatRuntime(minutes) {
     if (!minutes) return null;

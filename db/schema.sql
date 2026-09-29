@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = (now() AT TIME ZONE 'utc');
@@ -8,7 +6,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TABLE users (
-    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -30,7 +28,7 @@ CREATE UNIQUE INDEX users_username_lower_key ON users (lower(username));
 CREATE UNIQUE INDEX users_email_lower_key ON users (lower(email));
 
 CREATE TABLE media (
-    media_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    media_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tmdb_id INT NOT NULL,
     title TEXT NOT NULL,
     original_title TEXT,
@@ -49,21 +47,8 @@ CREATE TABLE media (
     CONSTRAINT media_type_check CHECK (type IN ('movie', 'tv'))
 );
 
-CREATE TABLE ratings (
-    rating_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
-    media_id UUID NOT NULL,
-    rating NUMERIC(3, 1) NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    CONSTRAINT ratings_rating_check CHECK (rating >= 0 AND rating <= 10),
-    CONSTRAINT ratings_user_media_key UNIQUE (user_id, media_id),
-    CONSTRAINT ratings_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT ratings_media_id_fkey FOREIGN KEY (media_id) REFERENCES media(media_id) ON DELETE CASCADE
-);
-
 CREATE TABLE watchlists (
-    watchlist_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    watchlist_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -76,7 +61,7 @@ CREATE TABLE watchlists (
 );
 
 CREATE TABLE watchlistitems (
-    watchlist_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    watchlist_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     watchlist_id UUID NOT NULL,
     media_id UUID NOT NULL,
     watched BOOLEAN NOT NULL DEFAULT false,
@@ -86,11 +71,12 @@ CREATE TABLE watchlistitems (
     CONSTRAINT watchlistitems_media_id_fkey FOREIGN KEY (media_id) REFERENCES media(media_id) ON DELETE CASCADE
 );
 
+-- Used by the join from titles to lists and by the nightly cleanup of titles no list uses
+CREATE INDEX watchlistitems_media_id_idx ON watchlistitems (media_id);
+
 CREATE TRIGGER users_set_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER media_set_updated_at BEFORE UPDATE ON media
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-CREATE TRIGGER ratings_set_updated_at BEFORE UPDATE ON ratings
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER watchlists_set_updated_at BEFORE UPDATE ON watchlists
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
