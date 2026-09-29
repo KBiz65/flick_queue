@@ -4,7 +4,7 @@ import { verifyPassword, hashPassword } from '@/lib/auth';
 import { emailError, firstError, nameError, passwordError, usernameError } from '@/lib/validation';
 
 async function updateUserData(req, res) {
-    const { email, username, firstName, lastName, allowAdultContent, watchRegion, oldPassword, newPassword, confirmPassword } = req.body;
+    const { email, username, firstName, lastName, allowAdultContent, confirmAdult, watchRegion, oldPassword, newPassword, confirmPassword } = req.body;
 
     const message = firstError(
         nameError(firstName, 'First name'),
@@ -25,7 +25,7 @@ async function updateUserData(req, res) {
         throw new ApiError(422, 'Choose a country for streaming availability.');
     }
 
-    const userQuery = await pool.query('SELECT password_hash FROM users WHERE user_id = $1', [req.userId]);
+    const userQuery = await pool.query('SELECT password_hash, allow_adult_content FROM users WHERE user_id = $1', [req.userId]);
     if (userQuery.rows.length === 0) {
         throw new ApiError(404, 'User not found');
     }
@@ -36,6 +36,15 @@ async function updateUserData(req, res) {
     let updateQueryBase =
         'UPDATE users SET email = $1, username = $2, first_name = $3, last_name = $4, allow_adult_content = $5, watch_region = $6';
     let updateQueryEnd = ' WHERE user_id = $7';
+
+    // Turning adult titles on requires the 18+ confirmation from the profile page, and records when it was given
+    const isTurningOnAdult = allowAdultContent && !user.allow_adult_content;
+    if (isTurningOnAdult) {
+        if (confirmAdult !== true) {
+            throw new ApiError(422, 'Confirm you are 18 or older to show adult titles.');
+        }
+        updateQueryBase += ", adult_confirmed_at = (now() AT TIME ZONE 'utc')";
+    }
 
     // Handle a password change only when a new password was sent.
     // A current password on its own (often browser auto-fill) is ignored.

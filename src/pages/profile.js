@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux';
 import Head from 'next/head';
 import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, MenuItem, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
+import AdultConfirmDialog from '../components/AdultConfirmDialog';
+import DeleteAccountSection from '../components/DeleteAccountSection';
 import { setUser } from '../store/slices/authSlice';
 import { LIMITS, emailError, nameError, passwordError, usernameError } from '../lib/validation';
 
@@ -13,6 +15,8 @@ const Profile = () => {
     const dispatch = useDispatch();
     const [isSaving, setIsSaving] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [confirmAdult, setConfirmAdult] = useState(false);
+    const [isAdultDialogOpen, setIsAdultDialogOpen] = useState(false);
     const [userData, setUserData] = useState({
         username: '',
         email: '',
@@ -87,7 +91,7 @@ const Profile = () => {
     const updateUserData = async () => {
         setIsSaving(true);
         try {
-            const response = await axios.post('/api/user/updateUserData', userData);
+            const response = await axios.post('/api/user/updateUserData', { ...userData, confirmAdult });
             const responseData = response.data;
             const newUserData = {
                 username: responseData.username,
@@ -101,6 +105,7 @@ const Profile = () => {
                 watchRegion: responseData.watchRegion,
             };
             setUserData(newUserData);
+            setConfirmAdult(false);
             setFormErrors({
                 username: '',
                 email: '',
@@ -125,6 +130,22 @@ const Profile = () => {
             ...prevState,
             [name]: type === 'checkbox' ? checked : value,
         }));
+    };
+
+    // Turning adult titles on needs an 18+ confirmation first; turning them off doesn't
+    const handleAdultToggle = (event) => {
+        if (event.target.checked) {
+            setIsAdultDialogOpen(true);
+            return;
+        }
+        setUserData((prevState) => ({ ...prevState, allowAdultContent: false }));
+        setConfirmAdult(false);
+    };
+
+    const handleAdultConfirm = () => {
+        setUserData((prevState) => ({ ...prevState, allowAdultContent: true }));
+        setConfirmAdult(true);
+        setIsAdultDialogOpen(false);
     };
 
     const handleSubmit = async (e) => {
@@ -309,7 +330,7 @@ const Profile = () => {
                         control={
                             <Switch
                                 checked={userData.allowAdultContent || false}
-                                onChange={handleInputChange}
+                                onChange={handleAdultToggle}
                                 name="allowAdultContent"
                             />
                         }
@@ -335,6 +356,9 @@ const Profile = () => {
                         </Button>
                     </Box>
                 </Paper>
+
+                <DeleteAccountSection />
+                <AdultConfirmDialog open={isAdultDialogOpen} onConfirm={handleAdultConfirm} onCancel={() => setIsAdultDialogOpen(false)} />
             </Container>
         </Box>
     );

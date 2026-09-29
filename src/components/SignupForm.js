@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
 import { setUser } from '../store/slices/authSlice';
 import { getSafeRedirect } from '../lib/redirect';
 import { LIMITS, emailError, firstError, nameError, passwordError, usernameError } from '../lib/validation';
@@ -100,6 +101,17 @@ export default function Signup({ setIsLoginView, from }) {
           <Button type="submit" variant="contained" size="large" fullWidth disabled={isSubmitting}>
             {isSubmitting ? 'Creating account...' : 'Create account'}
           </Button>
+          <Typography variant="caption" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+            By creating an account, you agree to the{' '}
+            <Link component={NextLink} href="/terms" target="_blank" rel="noopener noreferrer">
+              Terms of Use
+            </Link>{' '}
+            and{' '}
+            <Link component={NextLink} href="/privacy" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </Link>
+            .
+          </Typography>
         </Stack>
       </Box>
       <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>

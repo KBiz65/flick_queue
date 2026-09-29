@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Box, Container, Link as MuiLink, Stack, Typography } from '@mui/material';
 
 // TMDB's terms require their logo and disclaimer on the site, and watch provider data requires crediting JustWatch
@@ -31,7 +32,14 @@ const Footer = () => {
                         </MuiLink>
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        © 2026 FlickQueue
+                        © 2026 FlickQueue ·{' '}
+                        <MuiLink component={Link} href="/privacy" color="inherit">
+                            Privacy
+                        </MuiLink>{' '}
+                        ·{' '}
+                        <MuiLink component={Link} href="/terms" color="inherit">
+                            Terms
+                        </MuiLink>
                     </Typography>
                 </Stack>
             </Container>
