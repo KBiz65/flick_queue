@@ -17,6 +17,7 @@ CREATE TABLE users (
     watch_region VARCHAR(2) NOT NULL DEFAULT 'US',
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+    token_version INT NOT NULL DEFAULT 0,
     CONSTRAINT users_username_format CHECK (username ~ '^[A-Za-z0-9_.]{6,30}$'),
     CONSTRAINT users_first_name_length CHECK (char_length(first_name) <= 50),
     CONSTRAINT users_last_name_length CHECK (char_length(last_name) <= 50),

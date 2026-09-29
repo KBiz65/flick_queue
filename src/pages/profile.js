@@ -28,6 +28,7 @@ const Profile = () => {
         allowAdultContent: false,
         watchRegion: 'US',
     });
+    const [savedEmail, setSavedEmail] = useState('');
     const [regions, setRegions] = useState([]);
     const [formErrors, setFormErrors] = useState({
         username: '',
@@ -42,6 +43,9 @@ const Profile = () => {
         message: '',
         isError: false,
     });
+
+    // Changing the email needs the current password (checked on the server too)
+    const isChangingEmail = userData.email.trim().toLowerCase() !== savedEmail.toLowerCase();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -58,6 +62,7 @@ const Profile = () => {
                     allowAdultContent: userResponse.data.allowAdultContent || false,
                     watchRegion: userResponse.data.watchRegion || 'US',
                 });
+                setSavedEmail(userResponse.data.email);
                 setIsLoaded(true);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
@@ -105,6 +110,7 @@ const Profile = () => {
                 watchRegion: responseData.watchRegion,
             };
             setUserData(newUserData);
+            setSavedEmail(responseData.email);
             setConfirmAdult(false);
             setFormErrors({
                 username: '',
@@ -168,8 +174,12 @@ const Profile = () => {
             }
 
             if (!userData.oldPassword) {
-                errors.oldPassword = 'Enter old password to update';
+                errors.oldPassword = 'Enter your current password to change your password';
             }
+        }
+
+        if (isChangingEmail && !userData.oldPassword) {
+            errors.oldPassword = 'Enter your current password to change your email';
         }
 
         setFormErrors(errors);
@@ -253,7 +263,7 @@ const Profile = () => {
                             value={userData.email || ''}
                             onChange={handleInputChange}
                             error={!!formErrors.email}
-                            helperText={formErrors.email}
+                            helperText={formErrors.email || (isChangingEmail ? 'Enter your current password below to change your email' : '')}
                             slotProps={{ htmlInput: { maxLength: LIMITS.emailMax } }}
                         />
                     </Stack>

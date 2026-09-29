@@ -1,4 +1,4 @@
-import { getUserIdFromRequest } from './auth';
+import { getSessionUserId } from './session';
 
 export class ApiError extends Error {
     constructor(status, message) {
@@ -63,7 +63,7 @@ export function createHandler(methods, { auth = true } = {}) {
         }
 
         if (auth) {
-            const userId = getUserIdFromRequest(req);
+            const userId = await getSessionUserId(req.headers.cookie);
             if (!userId) {
                 return res.status(401).json({ message: 'Please log in to continue.' });
             }

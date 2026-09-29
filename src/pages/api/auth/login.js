@@ -11,7 +11,7 @@ async function login(req, res) {
     }
 
     const { rows } = await pool.query(
-        'SELECT user_id, first_name, password_hash FROM users WHERE lower(username) = lower($1)',
+        'SELECT user_id, first_name, password_hash, token_version FROM users WHERE lower(username) = lower($1)',
         [username.trim()]
     );
 
@@ -22,7 +22,7 @@ async function login(req, res) {
         throw new ApiError(401, 'Incorrect username or password.');
     }
 
-    setAuthCookie(res, user.user_id);
+    setAuthCookie(res, user.user_id, user.token_version);
 
     res.status(200).json({ firstName: user.first_name });
 }

@@ -2,8 +2,7 @@ import React from 'react';
 import SeoHead from '../components/SeoHead';
 import Link from 'next/link';
 import pool from '@/lib/db';
-import { getUserIdFromCookieHeader } from '@/lib/auth';
-import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
+import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
 import { getWatchlistSummaries } from '@/lib/watchlists';
 import Navbar from '../components/Navbar';
 import MediaRow from '../components/MediaRow';
@@ -152,13 +151,11 @@ export async function getServerSideProps({ req }) {
     },
   };
 
-  const userId = getUserIdFromCookieHeader(req.headers.cookie);
+  const { userId, includeAdult } = await getViewerSettings(req.headers.cookie);
   if (!userId) return loginRedirect;
 
   const { rows } = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
   if (rows.length === 0) return loginRedirect;
-
-  const includeAdult = await allowsAdultContent(req.headers.cookie);
 
   // Load everything at the same time
   const [watchlists, recommendations, trendingMovies, trendingTV] = await Promise.all([

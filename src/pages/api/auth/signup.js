@@ -21,13 +21,13 @@ async function signup(req, res) {
     const hashedPassword = await hashPassword(password);
 
     const { rows } = await pool.query(
-        'INSERT INTO users(first_name, last_name, email, username, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, first_name',
+        'INSERT INTO users(first_name, last_name, email, username, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, first_name, token_version',
         [firstname.trim(), lastname.trim(), email.trim().toLowerCase(), username.trim(), hashedPassword]
     );
     const newUser = rows[0];
 
     // Log the new user in right away
-    setAuthCookie(res, newUser.user_id);
+    setAuthCookie(res, newUser.user_id, newUser.token_version);
 
     res.status(201).json({ firstName: newUser.first_name });
 }

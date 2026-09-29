@@ -14,7 +14,6 @@ import { openAddDialog } from '../../../store/slices/watchlistSlice';
 import { posterUrl, tmdbImage } from '../../../lib/images';
 import { colors } from '../../../theme';
 import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
-import { getUserIdFromCookieHeader } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 
 const MEDIA_TYPES = ['movie', 'tv'];
@@ -222,7 +221,7 @@ export async function getServerSideProps({ params, req }) {
         throw error;
     }
 
-    const { includeAdult, watchRegion } = await getViewerSettings(req.headers.cookie);
+    const { userId, includeAdult, watchRegion } = await getViewerSettings(req.headers.cookie);
     if (data.adult && !includeAdult) {
         return { notFound: true };
     }
@@ -277,7 +276,7 @@ export async function getServerSideProps({ params, req }) {
         whereToWatch: buildWhereToWatch(data['watch/providers']?.results, watchRegion),
     };
 
-    return { props: { media, isLoggedIn: Boolean(getUserIdFromCookieHeader(req.headers.cookie)) } };
+    return { props: { media, isLoggedIn: Boolean(userId) } };
 }
 
 export default MediaDetails;

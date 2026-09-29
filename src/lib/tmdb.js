@@ -1,6 +1,6 @@
 import axios from 'axios';
 import pool from './db';
-import { getUserIdFromCookieHeader } from './auth';
+import { readSessionCookie } from './auth';
 
 const tmdb = axios.create({ baseURL: 'https://api.themoviedb.org/3', timeout: 8000 });
 
@@ -13,16 +13,21 @@ export async function tmdbGet(path, params = {}) {
 
 const DEFAULT_WATCH_REGION = 'US';
 
-// The viewer's content settings. Logged-out visitors get safe defaults: no adult titles, US streaming availability.
+// The viewer's id and content settings. Logged-out visitors (or a token from before a password change)
+// get safe defaults: no adult titles, US streaming availability. The token_version check matches lib/session.js.
 export async function getViewerSettings(cookieHeader) {
-    const defaults = { includeAdult: false, watchRegion: DEFAULT_WATCH_REGION };
-    const userId = getUserIdFromCookieHeader(cookieHeader);
-    if (!userId) return defaults;
+    const defaults = { userId: null, includeAdult: false, watchRegion: DEFAULT_WATCH_REGION };
+    const session = readSessionCookie(cookieHeader);
+    if (!session) return defaults;
 
-    const { rows } = await pool.query('SELECT allow_adult_content, watch_region FROM users WHERE user_id = $1', [userId]);
-    if (rows.length === 0) return defaults;
+    const { rows } = await pool.query(
+        'SELECT allow_adult_content, watch_region, token_version FROM users WHERE user_id = $1',
+        [session.userId]
+    );
+    if (rows.length === 0 || rows[0].token_version !== session.version) return defaults;
 
     return {
+        userId: session.userId,
         includeAdult: rows[0].allow_adult_content === true,
         watchRegion: rows[0].watch_region || DEFAULT_WATCH_REGION,
     };

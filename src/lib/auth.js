@@ -30,26 +30,31 @@ export async function verifyPassword(password, passwordHash) {
     return bcrypt.compare(password, passwordHash);
 }
 
-export function signToken(userId) {
-    return jwt.sign({}, getSecret(), { subject: userId, expiresIn: TOKEN_TTL_SECONDS, algorithm: JWT_ALGORITHM });
+// ver is the user's token_version when the token was issued. A password change bumps it, which ends older sessions.
+export function signToken(userId, tokenVersion) {
+    return jwt.sign({ ver: tokenVersion }, getSecret(), { subject: userId, expiresIn: TOKEN_TTL_SECONDS, algorithm: JWT_ALGORITHM });
 }
 
-export function verifyToken(token) {
+// Signature and expiry only. Tokens from before token_version existed have no ver and count as version 0.
+function readToken(token) {
     if (!token) return null;
     try {
-        return jwt.verify(token, getSecret(), { algorithms: [JWT_ALGORITHM] }).sub;
+        const payload = jwt.verify(token, getSecret(), { algorithms: [JWT_ALGORITHM] });
+        return { userId: payload.sub, version: Number.isInteger(payload.ver) ? payload.ver : 0 };
     } catch {
         return null;
     }
 }
 
-export function getUserIdFromCookieHeader(cookieHeader) {
+export function readSessionCookie(cookieHeader) {
     const cookies = parse(cookieHeader || '');
-    return verifyToken(cookies[AUTH_COOKIE]);
+    return readToken(cookies[AUTH_COOKIE]);
 }
 
-export function getUserIdFromRequest(req) {
-    return getUserIdFromCookieHeader(req.headers.cookie);
+// Used only by proxy.js to decide redirects. Doesn't check token_version, so anything that trusts
+// the login must use getSessionUserId (lib/session.js) instead.
+export function verifyToken(token) {
+    return readToken(token)?.userId ?? null;
 }
 
 function buildCookie(value, maxAge) {
@@ -62,8 +67,8 @@ function buildCookie(value, maxAge) {
     });
 }
 
-export function setAuthCookie(res, userId) {
-    res.setHeader('Set-Cookie', buildCookie(signToken(userId), TOKEN_TTL_SECONDS));
+export function setAuthCookie(res, userId, tokenVersion) {
+    res.setHeader('Set-Cookie', buildCookie(signToken(userId, tokenVersion), TOKEN_TTL_SECONDS));
 }
 
 export function clearAuthCookie(res) {
