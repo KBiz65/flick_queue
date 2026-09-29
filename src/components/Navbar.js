@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, AppBar, Avatar, Toolbar, Typography, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem, Snackbar } from '@mui/material';
+import { Alert, AppBar, Avatar, Toolbar, Box, Button, IconButton, TextField, InputAdornment, Menu, MenuItem, Snackbar } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useRouter } from 'next/router';
@@ -89,24 +89,17 @@ const Navbar = () => {
         <>
         <AppBar position="fixed">
             <Toolbar sx={{ gap: 2, minHeight: { xs: NAVBAR_HEIGHT, sm: NAVBAR_HEIGHT } }}>
-                <Typography
+                <Box
                     component="button"
                     onClick={navigateToHome}
-                    sx={{
-                        font: 'inherit',
-                        fontFamily: '"Big Shoulders Display Variable", sans-serif',
-                        fontWeight: 800,
-                        fontSize: '1.75rem',
-                        letterSpacing: '0.02em',
-                        color: 'text.primary',
-                        background: 'none',
-                        border: 0,
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                    }}
+                    aria-label="FlickQueue home"
+                    sx={{ display: 'flex', alignItems: 'center', p: 0, background: 'none', border: 0, cursor: 'pointer', flexShrink: 0 }}
                 >
-                    FlickQueue
-                </Typography>
+                    <picture>
+                        <source media="(min-width: 600px)" srcSet="/logo-wordmark.png" width={167} height={32} />
+                        <Box component="img" src="/logo-mark.png" alt="" width={48} height={32} sx={{ display: 'block', height: 32, width: 'auto' }} />
+                    </picture>
+                </Box>
                 <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
                     <TextField
                         id="searchInput"
