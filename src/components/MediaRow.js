@@ -27,8 +27,9 @@ const arrowSx = (side) => ({
     '@media (hover: none)': { display: 'none' },
 });
 
-// A horizontal, scrollable row of posters. Used on search results, the dashboard, and title pages.
-const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
+// A horizontal, scrollable row of posters, used on the dashboard and title pages.
+// With wrap, posters flow onto more lines instead (search results, where Load more adds to the end).
+const MediaRow = ({ mediaArray, emptyMessage, mediaType, wrap = false }) => {
     const rowRef = useRef(null);
     const dispatch = useDispatch();
 
@@ -49,16 +50,19 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
 
     return (
         <Box sx={{ position: 'relative', '&:hover .rowArrow': { opacity: 1 } }}>
-            <IconButton className="rowArrow" aria-label="Scroll left" onClick={() => scrollRow(-1)} sx={arrowSx('left')}>
-                <ChevronLeftIcon />
-            </IconButton>
+            {!wrap && (
+                <IconButton className="rowArrow" aria-label="Scroll left" onClick={() => scrollRow(-1)} sx={arrowSx('left')}>
+                    <ChevronLeftIcon />
+                </IconButton>
+            )}
             <Box
                 ref={rowRef}
                 sx={{
                     display: 'flex',
                     gap: 2,
-                    overflowX: 'auto',
-                    scrollSnapType: 'x proximity',
+                    flexWrap: wrap ? 'wrap' : 'nowrap',
+                    overflowX: wrap ? 'visible' : 'auto',
+                    scrollSnapType: wrap ? 'none' : 'x proximity',
                     pb: 1,
                     scrollbarWidth: 'none',
                     '&::-webkit-scrollbar': { display: 'none' },
@@ -143,9 +147,11 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType }) => {
                     );
                 })}
             </Box>
-            <IconButton className="rowArrow" aria-label="Scroll right" onClick={() => scrollRow(1)} sx={arrowSx('right')}>
-                <ChevronRightIcon />
-            </IconButton>
+            {!wrap && (
+                <IconButton className="rowArrow" aria-label="Scroll right" onClick={() => scrollRow(1)} sx={arrowSx('right')}>
+                    <ChevronRightIcon />
+                </IconButton>
+            )}
         </Box>
     );
 };

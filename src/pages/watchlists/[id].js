@@ -41,7 +41,10 @@ const WatchlistDetail = () => {
     const [busyItemId, setBusyItemId] = useState(null);
     const [isRenameOpen, setIsRenameOpen] = useState(false);
     const [renameValues, setRenameValues] = useState({ name: '', description: '' });
+    const [renameError, setRenameError] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
 
     useEffect(() => {
         if (!router.isReady) return;
@@ -94,29 +97,51 @@ const WatchlistDetail = () => {
 
     const openRename = () => {
         setRenameValues({ name: watchlist.name, description: watchlist.description || '' });
+        setRenameError('');
         setIsRenameOpen(true);
     };
 
+    // The dialogs can't be closed while a request is running
+    const closeRename = () => {
+        if (!isSaving) setIsRenameOpen(false);
+    };
+
+    const openDelete = () => {
+        setDeleteError('');
+        setIsDeleteOpen(true);
+    };
+
+    const closeDelete = () => {
+        if (!isSaving) setIsDeleteOpen(false);
+    };
+
+    // On failure the dialog stays open with the error, so nothing typed is lost
     const handleRename = async (event) => {
         event.preventDefault();
-        setActionError('');
+        if (isSaving) return;
+        setRenameError('');
+        setIsSaving(true);
         try {
             const response = await axios.put(`/api/watchlists/${id}`, renameValues);
             setWatchlist(response.data.watchlist);
             setIsRenameOpen(false);
         } catch (error) {
-            setActionError(error.response?.data?.message || 'Could not rename this list.');
-            setIsRenameOpen(false);
+            setRenameError(error.response?.data?.message || 'Could not rename this list.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDelete = async () => {
+        if (isSaving) return;
+        setDeleteError('');
+        setIsSaving(true);
         try {
             await axios.delete(`/api/watchlists/${id}`);
             router.push('/watchlists');
         } catch (error) {
-            setActionError(error.response?.data?.message || 'Could not delete this list.');
-            setIsDeleteOpen(false);
+            setDeleteError(error.response?.data?.message || 'Could not delete this list.');
+            setIsSaving(false);
         }
     };
 
@@ -182,7 +207,7 @@ const WatchlistDetail = () => {
                         <Button variant="outlined" onClick={openRename}>
                             Rename
                         </Button>
-                        <Button variant="outlined" color="error" onClick={() => setIsDeleteOpen(true)}>
+                        <Button variant="outlined" color="error" onClick={openDelete}>
                             Delete list
                         </Button>
                     </Stack>
@@ -226,10 +251,11 @@ const WatchlistDetail = () => {
                 )}
             </Container>
 
-            <Dialog open={isRenameOpen} onClose={() => setIsRenameOpen(false)} fullWidth maxWidth="xs">
+            <Dialog open={isRenameOpen} onClose={closeRename} fullWidth maxWidth="xs">
                 <Box component="form" onSubmit={handleRename}>
                     <DialogTitle>Rename list</DialogTitle>
                     <DialogContent>
+                        {renameError && <Alert severity="error" sx={{ mb: 1 }}>{renameError}</Alert>}
                         <TextField
                             label="Name"
                             fullWidth
@@ -250,23 +276,24 @@ const WatchlistDetail = () => {
                         />
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setIsRenameOpen(false)}>Cancel</Button>
-                        <Button type="submit" variant="contained" disabled={!renameValues.name.trim()}>
-                            Save
+                        <Button onClick={closeRename} disabled={isSaving}>Cancel</Button>
+                        <Button type="submit" variant="contained" disabled={!renameValues.name.trim() || isSaving}>
+                            {isSaving ? 'Saving...' : 'Save'}
                         </Button>
                     </DialogActions>
                 </Box>
             </Dialog>
 
-            <Dialog open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)}>
+            <Dialog open={isDeleteOpen} onClose={closeDelete}>
                 <DialogTitle>Delete &quot;{watchlist.name}&quot;?</DialogTitle>
                 <DialogContent>
+                    {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
                     <Typography>This removes the list and all {items.length} titles in it. This can&apos;t be undone.</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                    <Button color="error" variant="contained" onClick={handleDelete}>
-                        Delete
+                    <Button onClick={closeDelete} disabled={isSaving}>Cancel</Button>
+                    <Button color="error" variant="contained" onClick={handleDelete} disabled={isSaving}>
+                        {isSaving ? 'Deleting...' : 'Delete'}
                     </Button>
                 </DialogActions>
             </Dialog>

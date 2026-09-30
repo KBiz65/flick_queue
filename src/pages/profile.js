@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
@@ -86,9 +86,14 @@ const Profile = () => {
             .catch(() => setRegions([]));
     }, []);
 
+    // Each new message restarts the 5 second timer, so an older timer can't hide a newer message early
+    const statusTimerRef = useRef(null);
+    useEffect(() => () => clearTimeout(statusTimerRef.current), []);
+
     const showStatus = (message, isError) => {
+        clearTimeout(statusTimerRef.current);
         setUpdateStatus({ message, isError });
-        setTimeout(() => {
+        statusTimerRef.current = setTimeout(() => {
             setUpdateStatus({ message: '', isError });
         }, 5000);
     };

@@ -125,7 +125,8 @@ const HeroCarousel = ({ slides, startIndex = 0, children }) => {
                     </Box>
                 )}
 
-                <Box>{children}</Box>
+                {/* On phones the login form comes first, so it's visible without scrolling and doesn't shift as slides change */}
+                <Box sx={{ order: { xs: -1, md: 0 } }}>{children}</Box>
             </Container>
         </Box>
     );
