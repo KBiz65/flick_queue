@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Box, Button, Chip, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import StarIcon from '@mui/icons-material/Star';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { tmdbImage } from '../lib/images';
 import { colors } from '../theme';
 
@@ -14,18 +16,30 @@ const fadeIn = keyframes`
     to { opacity: 1; }
 `;
 
-const fillBar = keyframes`
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
-`;
+// Whether the device asks for less motion. The server can't know, so it assumes no.
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const subscribeToReducedMotion = (onChange) => {
+    const query = window.matchMedia(REDUCED_MOTION_QUERY);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+};
+const getReducedMotion = () => window.matchMedia(REDUCED_MOTION_QUERY).matches;
+const getServerReducedMotion = () => false;
 
 // Full-width rotating showcase of this week's trending titles. Plays through every slide, then starts over.
-// Hovering (or typing in the login form) pauses it so people can read a title before it moves on.
+// The pause button stops it until play is pressed (starts paused when the device asks for reduced motion).
+// Hovering over the slide text or typing in the login form also pauses it until the pointer or focus leaves.
 // Anything passed as children (the login form) sits on the right side of the hero.
 const HeroCarousel = ({ slides, startIndex = 0, children }) => {
     const [index, setIndex] = useState(startIndex);
-    const [isPaused, setIsPaused] = useState(false);
-    const isPlaying = slides.length > 1 && !isPaused;
+    const prefersReducedMotion = useSyncExternalStore(subscribeToReducedMotion, getReducedMotion, getServerReducedMotion);
+    // null until the user presses pause or play, so the reduced motion setting decides until then
+    const [pausedByUser, setPausedByUser] = useState(null);
+    const [isHovering, setIsHovering] = useState(false);
+    const [isFormFocused, setIsFormFocused] = useState(false);
+    const isPaused = pausedByUser ?? prefersReducedMotion;
+    const hasMultipleSlides = slides.length > 1;
+    const isPlaying = hasMultipleSlides && !isPaused && !isHovering && !isFormFocused;
     const slide = slides[index];
     const nextSlide = slides[(index + 1) % slides.length];
 
@@ -81,7 +95,12 @@ const HeroCarousel = ({ slides, startIndex = 0, children }) => {
                 }}
             >
                 {slide ? (
-                    <Box aria-live={isPlaying ? 'off' : 'polite'} sx={{ maxWidth: 640 }}>
+                    <Box
+                        aria-live={isPlaying ? 'off' : 'polite'}
+                        onMouseEnter={() => setIsHovering(true)}
+                        onMouseLeave={() => setIsHovering(false)}
+                        sx={{ maxWidth: 640 }}
+                    >
                         <Chip
                             size="small"
                             variant="outlined"
@@ -112,9 +131,22 @@ const HeroCarousel = ({ slides, startIndex = 0, children }) => {
                         >
                             {slide.overview}
                         </Typography>
-                        <Button component={Link} href={`/media/${slide.type}/${slide.id}`} variant="outlined" size="large" sx={{ mt: 3, bgcolor: 'rgba(22, 18, 28, 0.5)' }}>
-                            View details
-                        </Button>
+                        <Stack direction="row" spacing={1.5} sx={{ mt: 3, alignItems: 'center' }}>
+                            <Button component={Link} href={`/media/${slide.type}/${slide.id}`} variant="outlined" size="large" sx={{ bgcolor: 'rgba(22, 18, 28, 0.5)' }}>
+                                View details
+                            </Button>
+                            {hasMultipleSlides && (
+                                <Tooltip title={isPaused ? 'Play slideshow' : 'Pause slideshow'}>
+                                    <IconButton
+                                        onClick={() => setPausedByUser(!isPaused)}
+                                        aria-label={isPaused ? 'Play slideshow' : 'Pause slideshow'}
+                                        sx={{ border: 1, borderColor: 'divider', bgcolor: 'rgba(22, 18, 28, 0.5)' }}
+                                    >
+                                        {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Stack>
 
                     </Box>
                 ) : (
@@ -126,7 +158,15 @@ const HeroCarousel = ({ slides, startIndex = 0, children }) => {
                 )}
 
                 {/* On phones the login form comes first, so it's visible without scrolling and doesn't shift as slides change */}
-                <Box sx={{ order: { xs: -1, md: 0 } }}>{children}</Box>
+                <Box
+                    onFocus={() => setIsFormFocused(true)}
+                    onBlur={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) setIsFormFocused(false);
+                    }}
+                    sx={{ order: { xs: -1, md: 0 } }}
+                >
+                    {children}
+                </Box>
             </Container>
         </Box>
     );
