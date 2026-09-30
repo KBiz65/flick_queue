@@ -1,10 +1,34 @@
 import pool from '@/lib/db';
 import { ApiError, createHandler } from '@/lib/api';
-import { verifyPassword, hashPassword, setAuthCookie } from '@/lib/auth';
+import { clearAuthCookie, verifyPassword, hashPassword, setAuthCookie } from '@/lib/auth';
 import { emailError, firstError, nameError, passwordError, usernameError } from '@/lib/validation';
 
-async function updateUserData(req, res) {
-    const { email, username, firstName, lastName, allowAdultContent, confirmAdult, watchRegion, oldPassword, newPassword, confirmPassword } = req.body;
+// The logged-in user's own account: GET reads the profile, PATCH updates it, DELETE removes the account
+
+async function getUser(req, res) {
+    const { rows } = await pool.query(
+        'SELECT username, email, first_name, last_name, allow_adult_content, watch_region FROM users WHERE user_id = $1',
+        [req.userId]
+    );
+
+    if (rows.length === 0) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = rows[0];
+
+    res.status(200).json({
+        username: user.username,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        allowAdultContent: user.allow_adult_content,
+        watchRegion: user.watch_region,
+    });
+}
+
+async function updateUser(req, res) {
+    const { email, username, firstName, lastName, allowAdultContent, confirmAdult, watchRegion, oldPassword, newPassword, confirmPassword } = req.body || {};
 
     const message = firstError(
         nameError(firstName, 'First name'),
@@ -108,4 +132,27 @@ async function updateUserData(req, res) {
     });
 }
 
-export default createHandler({ POST: updateUserData });
+// Deletes the account after checking the password. Watchlists and their items go with it (ON DELETE CASCADE).
+async function deleteUser(req, res) {
+    const { password } = req.body || {};
+    if (typeof password !== 'string' || !password) {
+        throw new ApiError(422, 'Enter your password to delete your account.');
+    }
+
+    const { rows } = await pool.query('SELECT password_hash FROM users WHERE user_id = $1', [req.userId]);
+    if (rows.length === 0) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    const isValid = await verifyPassword(password, rows[0].password_hash);
+    if (!isValid) {
+        throw new ApiError(422, 'Password is incorrect.');
+    }
+
+    await pool.query('DELETE FROM users WHERE user_id = $1', [req.userId]);
+    clearAuthCookie(res);
+
+    res.status(200).json({ message: 'Account deleted.' });
+}
+
+export default createHandler({ GET: getUser, PATCH: updateUser, DELETE: deleteUser });

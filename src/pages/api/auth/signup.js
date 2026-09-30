@@ -5,11 +5,11 @@ import { emailError, firstError, nameError, passwordError, usernameError } from 
 
 // Duplicate usernames and emails are caught by the database's unique indexes (see createHandler)
 async function signup(req, res) {
-    const { firstname, lastname, email, username, password } = req.body;
+    const { firstName, lastName, email, username, password } = req.body;
 
     const message = firstError(
-        nameError(firstname, 'First name'),
-        nameError(lastname, 'Last name'),
+        nameError(firstName, 'First name'),
+        nameError(lastName, 'Last name'),
         emailError(email),
         usernameError(username),
         passwordError(password)
@@ -22,7 +22,7 @@ async function signup(req, res) {
 
     const { rows } = await pool.query(
         'INSERT INTO users(first_name, last_name, email, username, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, first_name, token_version',
-        [firstname.trim(), lastname.trim(), email.trim().toLowerCase(), username.trim(), hashedPassword]
+        [firstName.trim(), lastName.trim(), email.trim().toLowerCase(), username.trim(), hashedPassword]
     );
     const newUser = rows[0];
 

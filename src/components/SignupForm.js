@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
+import axios from 'axios';
 import { setUser } from '../store/slices/authSlice';
 import { getSafeRedirect } from '../lib/redirect';
 import { LIMITS, emailError, firstError, nameError, passwordError, usernameError } from '../lib/validation';
 import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 
-export default function Signup({ setIsLoginView, from }) {
+export default function SignupForm({ setIsLoginView, from }) {
   const [signupError, setSignupError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
@@ -19,15 +20,15 @@ export default function Signup({ setIsLoginView, from }) {
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
-    const firstname = formData.get('firstname');
-    const lastname = formData.get('lastname');
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
     const email = formData.get('email');
     const username = formData.get('username');
     const password = formData.get('password');
 
     const validationError = firstError(
-      nameError(firstname, 'First name'),
-      nameError(lastname, 'Last name'),
+      nameError(firstName, 'First name'),
+      nameError(lastName, 'Last name'),
       emailError(email),
       usernameError(username),
       passwordError(password)
@@ -38,26 +39,15 @@ export default function Signup({ setIsLoginView, from }) {
       return;
     }
 
-    // Send the form data to your API route
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstname, lastname, email, username, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setSignupError(data.message || 'Signup failed');
-        return;
-      }
+      const response = await axios.post('/api/auth/signup', { firstName, lastName, email, username, password });
 
       // Signup also logs the user in, so go straight to the app
-      dispatch(setUser(data));
+      dispatch(setUser(response.data));
       router.push(getSafeRedirect(from));
-    } catch {
-      setSignupError('Signup failed due to a network error');
+    } catch (error) {
+      // No response means the request never reached the server
+      setSignupError(error.response ? error.response.data?.message || 'Signup failed' : 'Signup failed due to a network error');
     } finally {
       setIsSubmitting(false);
     }
@@ -74,8 +64,8 @@ export default function Signup({ setIsLoginView, from }) {
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Stack spacing={2.5}>
           <Stack direction="row" spacing={2}>
-            <TextField id="firstname" name="firstname" label="First name" autoComplete="given-name" required slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }} />
-            <TextField id="lastname" name="lastname" label="Last name" autoComplete="family-name" required slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }} />
+            <TextField id="firstName" name="firstName" label="First name" autoComplete="given-name" required slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }} />
+            <TextField id="lastName" name="lastName" label="Last name" autoComplete="family-name" required slotProps={{ htmlInput: { maxLength: LIMITS.nameMax } }} />
           </Stack>
           <TextField id="email" name="email" label="Email" type="email" autoComplete="email" required slotProps={{ htmlInput: { maxLength: LIMITS.emailMax } }} />
           <TextField

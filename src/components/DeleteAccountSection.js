@@ -38,7 +38,7 @@ const DeleteAccountSection = () => {
         setError('');
         setIsDeleting(true);
         try {
-            await axios.post('/api/user/deleteAccount', { password });
+            await axios.delete('/api/user', { data: { password } });
             await dispatch(logout());
             router.push('/');
         } catch (deleteError) {

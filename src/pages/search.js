@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import { Alert, CircularProgress } from '@mui/material';
 import { performSearch, loadMoreResults, setSearchItem, selectSearch } from '../store/slices/searchSlice';
 
-const AllMedia = () => {
+const Search = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const search = useSelector(selectSearch);
@@ -112,4 +112,4 @@ const AllMedia = () => {
     );
 };
 
-export default AllMedia;
+export default Search;

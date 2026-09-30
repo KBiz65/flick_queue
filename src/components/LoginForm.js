@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 import { setUser } from '../store/slices/authSlice';
 import { getSafeRedirect } from '../lib/redirect';
 import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material';
@@ -18,23 +19,12 @@ export default function LoginForm({ setIsLoginView, from }) {
         setLoginError('');
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                setLoginError(errorData.message || 'Login failed');
-                return;
-            }
-
-            const userData = await response.json();
-            dispatch(setUser(userData));
+            const response = await axios.post('/api/auth/login', { username, password });
+            dispatch(setUser(response.data));
             router.push(getSafeRedirect(from));
-        } catch {
-            setLoginError('Login failed due to a network error');
+        } catch (error) {
+            // No response means the request never reached the server
+            setLoginError(error.response ? error.response.data?.message || 'Login failed' : 'Login failed due to a network error');
         } finally {
             setIsSubmitting(false);
         }

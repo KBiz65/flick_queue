@@ -51,7 +51,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const userResponse = await axios.get('/api/user/getUserData');
+                const userResponse = await axios.get('/api/user');
                 setUserData({
                     username: userResponse.data.username,
                     email: userResponse.data.email,
@@ -102,7 +102,7 @@ const Profile = () => {
     const updateUserData = async () => {
         setIsSaving(true);
         try {
-            const response = await axios.post('/api/user/updateUserData', { ...userData, confirmAdult });
+            const response = await axios.patch('/api/user', { ...userData, confirmAdult });
             const responseData = response.data;
             const newUserData = {
                 username: responseData.username,

@@ -144,9 +144,7 @@ All routes accept and return JSON. Routes marked with a lock require a logged-in
 | GET | `/api/auth/session` | Current session, if any |
 | GET | `/api/tmdb/multiSearch` | Search movies and TV shows (`searchItem`, `page`) |
 | GET | `/api/tmdb/regions` | Countries with streaming data |
-| GET 🔒 | `/api/user/getUserData` | Current user's profile |
-| POST 🔒 | `/api/user/updateUserData` | Update profile, password, or settings |
-| POST 🔒 | `/api/user/deleteAccount` | Delete the account (requires password) |
+| GET, PATCH, DELETE 🔒 | `/api/user` | Read or update your profile, password, and settings, or delete the account (requires password) |
 | GET, POST 🔒 | `/api/watchlists` | List watchlists or create one |
 | GET, PUT, DELETE 🔒 | `/api/watchlists/[id]` | Get, edit (name and description), or delete a watchlist |
 | POST 🔒 | `/api/watchlists/[id]/items` | Add a title to a watchlist |

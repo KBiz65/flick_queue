@@ -69,7 +69,7 @@ const Navbar = () => {
             dispatch(setIsSearchInvalid(true));
             return;
         }
-        router.push({ pathname: '/searchResults', query: { q: trimmedSearch } });
+        router.push({ pathname: '/search', query: { q: trimmedSearch } });
     };
 
     const handleSearchChange = (event) => {
