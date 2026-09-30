@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Avatar, Box, Button, Container, Stack, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
 import MediaRow from '../../components/MediaRow';
+import { MAIN_CONTENT_ID } from '../../components/SkipLink';
 import Filmography, { INITIAL_COUNT } from '../../components/Filmography';
 import { tmdbImage } from '../../lib/images';
 import { formatDate } from '@/lib/format';
@@ -63,7 +64,7 @@ const PersonDetails = ({ person }) => {
                 card="summary"
             />
             <Navbar />
-            <Container maxWidth="xl" sx={{ py: 6 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 6 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px minmax(0, 1fr)' }, gap: { xs: 4, md: 6 } }}>
                     <Box
                         sx={{

@@ -78,33 +78,35 @@ const MediaRow = ({ mediaArray, emptyMessage, mediaType, wrap = false }) => {
                             key={`${itemType}-${item.id}`}
                             sx={{ width: POSTER_WIDTH, flexShrink: 0, scrollSnapAlign: 'start', '&:hover .mediaActions, &:focus-within .mediaActions': { opacity: 1 } }}
                         >
-                            <Box
-                                component={Link}
-                                href={`/media/${itemType}/${item.id}`}
-                                sx={{
-                                    display: 'block',
-                                    position: 'relative',
-                                    aspectRatio: '2 / 3',
-                                    borderRadius: 2,
-                                    overflow: 'hidden',
-                                    bgcolor: 'background.paper',
-                                    border: 1,
-                                    borderColor: 'divider',
-                                }}
-                            >
-                                <Image
-                                    src={posterUrl(item.poster_path, 'w342')}
-                                    alt={title}
-                                    fill
-                                    sizes="(max-width: 600px) 130px, 170px"
-                                    style={{ objectFit: 'cover' }}
-                                />
+                            {/* The + button sits beside the poster link, not inside it, since a button can't be inside a link */}
+                            <Box sx={{ position: 'relative' }}>
+                                <Box
+                                    component={Link}
+                                    href={`/media/${itemType}/${item.id}`}
+                                    sx={{
+                                        display: 'block',
+                                        position: 'relative',
+                                        aspectRatio: '2 / 3',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        bgcolor: 'background.paper',
+                                        border: 1,
+                                        borderColor: 'divider',
+                                    }}
+                                >
+                                    <Image
+                                        src={posterUrl(item.poster_path, 'w342')}
+                                        alt={title}
+                                        fill
+                                        sizes="(max-width: 600px) 130px, 170px"
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                </Box>
                                 <Tooltip title="Add to watchlist">
                                     <IconButton
                                         className="mediaActions"
                                         aria-label={`Add ${title} to a watchlist`}
                                         onClick={(event) => {
-                                            event.preventDefault();
                                             event.currentTarget.blur();
                                             dispatch(openAddDialog({ tmdbId: item.id, type: itemType, title }));
                                         }}

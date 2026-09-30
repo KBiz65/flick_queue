@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import HeroCarousel from '../components/HeroCarousel';
 import LoginForm from '../components/LoginForm';
 import SignupForm from '../components/SignupForm';
+import Box from '@mui/material/Box';
+import { MAIN_CONTENT_ID } from '../components/SkipLink';
 import { tmdbGetCached, TRENDING_TTL_MS } from '@/lib/tmdb';
 
 export default function Home({ slides, startIndex }) {
@@ -19,13 +21,15 @@ export default function Home({ slides, startIndex }) {
                 description="Save movies and TV shows to watchlists, track what you've watched, see where to stream, and get recommendations."
             />
             <Navbar />
-            <HeroCarousel slides={slides} startIndex={startIndex}>
-                {isLoginView ? (
-                    <LoginForm setIsLoginView={setIsLoginView} from={from} />
-                ) : (
-                    <SignupForm setIsLoginView={setIsLoginView} from={from} />
-                )}
-            </HeroCarousel>
+            <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1}>
+                <HeroCarousel slides={slides} startIndex={startIndex}>
+                    {isLoginView ? (
+                        <LoginForm setIsLoginView={setIsLoginView} from={from} />
+                    ) : (
+                        <SignupForm setIsLoginView={setIsLoginView} from={from} />
+                    )}
+                </HeroCarousel>
+            </Box>
         </div>
     );
 }

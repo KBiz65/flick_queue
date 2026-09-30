@@ -8,6 +8,7 @@ import { getWatchlistSummaries } from '@/lib/watchlists';
 import Navbar from '../components/Navbar';
 import MediaRow from '../components/MediaRow';
 import WatchlistCard from '../components/WatchlistCard';
+import { MAIN_CONTENT_ID } from '../components/SkipLink';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -30,7 +31,7 @@ const Dashboard = ({ firstName, watchlists, recommendations, trendingMovies, tre
     <>
       <SeoHead title="Dashboard" />
       <Navbar />
-      <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 5 }}>
         <Typography variant="h2" component="h1">
           Welcome back, {firstName}
         </Typography>

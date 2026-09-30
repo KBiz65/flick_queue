@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Alert, Box, Button, CircularProgress, Container, TextField, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
 import WatchlistCard from '../../components/WatchlistCard';
+import { MAIN_CONTENT_ID } from '../../components/SkipLink';
 import {
     createWatchlist,
     fetchWatchlists,
@@ -40,7 +41,7 @@ const Watchlists = () => {
         <>
             <SeoHead title="My Watchlists" />
             <Navbar />
-            <Container maxWidth="xl" sx={{ py: 5 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 5 }}>
                 <Typography variant="h2" component="h1">
                     My Watchlists
                 </Typography>

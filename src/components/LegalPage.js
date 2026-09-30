@@ -2,6 +2,7 @@ import React from 'react';
 import SeoHead from './SeoHead';
 import { Box, Container, Typography } from '@mui/material';
 import Navbar from './Navbar';
+import { MAIN_CONTENT_ID } from './SkipLink';
 
 export const LEGAL_CONTACT_EMAIL = 'support@timberfoottech.com';
 
@@ -10,7 +11,7 @@ const LegalPage = ({ title, description, path, lastUpdated, children }) => (
     <Box>
         <SeoHead title={title} description={description} path={path} />
         <Navbar />
-        <Container component="main" maxWidth="md" sx={{ py: 5 }}>
+        <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="md" sx={{ py: 5 }}>
             <Typography component="h1" variant="h3">
                 {title}
             </Typography>

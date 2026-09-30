@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import Navbar from '../../components/Navbar';
 import WatchlistItemCard from '../../components/WatchlistItemCard';
+import { MAIN_CONTENT_ID } from '../../components/SkipLink';
 import { LIMITS } from '../../lib/validation';
 
 const FILTERS = {
@@ -149,7 +150,7 @@ const WatchlistDetail = () => {
         return (
             <>
                 <Navbar />
-                <Container maxWidth="xl" sx={{ mt: 3 }}>
+                <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ mt: 3 }}>
                     <Alert severity="error">{loadError}</Alert>
                     <Button component={Link} href="/watchlists" sx={{ mt: 2 }}>
                         Back to My Watchlists
@@ -163,8 +164,8 @@ const WatchlistDetail = () => {
         return (
             <>
                 <Navbar />
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-                    <CircularProgress />
+                <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1} sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+                    <CircularProgress aria-label="Loading list" />
                 </Box>
             </>
         );
@@ -177,7 +178,7 @@ const WatchlistDetail = () => {
         <>
             <SeoHead title={watchlist.name} />
             <Navbar />
-            <Container maxWidth="xl" sx={{ py: 5 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 5 }}>
                 <Button component={Link} href="/watchlists" size="small" sx={{ mb: 2, ml: -1.5 }}>
                     Back to My Watchlists
                 </Button>

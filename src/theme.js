@@ -37,9 +37,15 @@ const theme = createTheme({
         button: { fontWeight: 700, textTransform: 'none', letterSpacing: 0 },
     },
     components: {
+        // MUI renders subtitle text as <h6> by default. Here it's only used for poster titles and names, which aren't headings.
+        MuiTypography: {
+            defaultProps: { variantMapping: { subtitle1: 'p', subtitle2: 'p' } },
+        },
         MuiCssBaseline: {
             styleOverrides: {
                 body: { backgroundColor: colors.theater, minHeight: '100vh' },
+                // Keep the skip link's target from landing under the fixed navbar
+                '#main-content': { scrollMarginTop: 64 },
                 '::selection': { backgroundColor: colors.marquee, color: colors.theater },
                 '@media (prefers-reduced-motion: reduce)': {
                     '*, *::before, *::after': { animationDuration: '0.01ms !important', transitionDuration: '0.01ms !important' },

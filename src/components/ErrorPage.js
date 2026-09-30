@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { Button, Container, Typography } from '@mui/material';
 import SeoHead from './SeoHead';
 import Navbar from './Navbar';
+import { MAIN_CONTENT_ID } from './SkipLink';
 
 // Shared layout for the 404 and 500 pages
 const ErrorPage = ({ code, title, message }) => (
     <>
         <SeoHead title={title} />
         <Navbar />
-        <Container component="main" maxWidth="md" sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+        <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="md" sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
             <Typography
                 aria-hidden="true"
                 sx={{ fontFamily: '"Big Shoulders Display Variable", sans-serif', fontWeight: 800, fontSize: { xs: '5rem', md: '7rem' }, lineHeight: 1, color: 'primary.main' }}

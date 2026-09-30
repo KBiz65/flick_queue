@@ -7,6 +7,7 @@ import { Box, Button, Chip, Container, Link as MuiLink, Stack, Typography } from
 import StarIcon from '@mui/icons-material/Star';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Navbar from '../../../components/Navbar';
+import { MAIN_CONTENT_ID } from '../../../components/SkipLink';
 import MediaRow from '../../../components/MediaRow';
 import CastRow from '../../../components/CastRow';
 import WhereToWatch from '../../../components/WhereToWatch';
@@ -86,7 +87,7 @@ const MediaDetails = ({ media, isLoggedIn }) => {
                 />
             </Box>
 
-            <Container maxWidth="xl" sx={{ pt: { xs: 4, md: 12 }, pb: 8 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ pt: { xs: 4, md: 12 }, pb: 8 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'end' }}>
                     <Box
                         sx={{

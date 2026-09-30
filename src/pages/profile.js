@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import SeoHead from '../components/SeoHead';
 import { Alert, Box, CircularProgress, Container, Divider, Typography, TextField, Button, FormControlLabel, MenuItem, Stack, Switch, Paper } from '@mui/material';
 import Navbar from '../components/Navbar';
+import { MAIN_CONTENT_ID } from '../components/SkipLink';
 import AdultConfirmDialog from '../components/AdultConfirmDialog';
 import DeleteAccountSection from '../components/DeleteAccountSection';
 import { setUser } from '../store/slices/authSlice';
@@ -202,7 +203,7 @@ const Profile = () => {
         return (
             <Box>
                 <Navbar />
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+                <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1} sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
                     {updateStatus.isError ? (
                         <Alert severity="error">{updateStatus.message}</Alert>
                     ) : (
@@ -217,7 +218,7 @@ const Profile = () => {
         <Box>
             <SeoHead title="Profile" />
             <Navbar />
-            <Container component="main" maxWidth="sm" sx={{ py: 5 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="sm" sx={{ py: 5 }}>
                 <Typography component="h1" variant="h3">
                     Profile
                 </Typography>

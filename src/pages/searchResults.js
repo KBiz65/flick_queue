@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import SeoHead from '../components/SeoHead';
 import Navbar from '../components/Navbar';
 import MediaRow from '../components/MediaRow';
+import { MAIN_CONTENT_ID } from '../components/SkipLink';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -36,7 +37,7 @@ const AllMedia = () => {
             <>
                 <SeoHead title="Search" />
                 <Navbar />
-                <Container maxWidth="xl" sx={{ py: 5 }}>
+                <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 5 }}>
                     <Typography variant="h2" component="h1">
                         Search
                     </Typography>
@@ -52,7 +53,7 @@ const AllMedia = () => {
         <>
             <SeoHead title={currentSearch || 'Search'} />
             <Navbar />
-            <Container maxWidth="xl" sx={{ py: 5 }}>
+            <Container component="main" id={MAIN_CONTENT_ID} tabIndex={-1} maxWidth="xl" sx={{ py: 5 }}>
                 <Typography variant="h2" component="h1">
                     Results for &ldquo;{currentSearch}&rdquo;
                 </Typography>
