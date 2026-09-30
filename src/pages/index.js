@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import HeroCarousel from '../components/HeroCarousel';
 import LoginForm from '../components/LoginForm';
 import SignupForm from '../components/SignupForm';
-import { tmdbGet } from '@/lib/tmdb';
+import { tmdbGetCached, TRENDING_TTL_MS } from '@/lib/tmdb';
 
 export default function Home({ slides, startIndex }) {
     const [isLoginView, setIsLoginView] = useState(true);
@@ -45,7 +45,10 @@ function toSlide(item, type) {
 // This week's trending movies and shows, alternating, for the home page carousel
 export async function getServerSideProps() {
     try {
-        const [movies, shows] = await Promise.all([tmdbGet('/trending/movie/week'), tmdbGet('/trending/tv/week')]);
+        const [movies, shows] = await Promise.all([
+            tmdbGetCached('/trending/movie/week', {}, TRENDING_TTL_MS),
+            tmdbGetCached('/trending/tv/week', {}, TRENDING_TTL_MS),
+        ]);
         const usable = (item) => item.backdrop_path && !item.adult;
         const movieSlides = movies.results.filter(usable).map((item) => toSlide(item, 'movie'));
         const showSlides = shows.results.filter(usable).map((item) => toSlide(item, 'tv'));

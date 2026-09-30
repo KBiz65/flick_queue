@@ -4,12 +4,16 @@ import Image from 'next/image';
 import { Avatar, Box, Button, Container, Stack, Typography } from '@mui/material';
 import Navbar from '../../components/Navbar';
 import MediaRow from '../../components/MediaRow';
-import Filmography from '../../components/Filmography';
+import Filmography, { INITIAL_COUNT } from '../../components/Filmography';
 import { tmdbImage } from '../../lib/images';
 import { formatDate } from '@/lib/format';
-import { tmdbGet, allowsAdultContent, toMediaCard } from '@/lib/tmdb';
+import { allowsAdultContent } from '@/lib/tmdb';
+import { buildFilmography, getPersonWithCredits } from '@/lib/person';
 
 const BIO_PREVIEW_LENGTH = 700;
+
+// Above this many credits, the page sends only the first screenful and the rest load on request
+const FULL_CREDITS_LIMIT = 100;
 
 const DEPARTMENT_LABELS = {
     Acting: 'Acting',
@@ -123,12 +127,12 @@ const PersonDetails = ({ person }) => {
                     </Box>
                 )}
 
-                {person.credits.length > 0 && (
+                {person.creditCounts.all > 0 && (
                     <Box component="section" sx={{ mt: 7 }}>
                         <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
                             Filmography
                         </Typography>
-                        <Filmography credits={person.credits} />
+                        <Filmography personId={person.id} credits={person.credits} counts={person.creditCounts} />
                     </Box>
                 )}
             </Container>
@@ -136,35 +140,12 @@ const PersonDetails = ({ person }) => {
     );
 };
 
-// Merge cast and crew credits into one entry per title, with every role they had on it
-function buildCredits(combinedCredits, includeAdult) {
-    const byTitle = new Map();
-    const allowed = (credit) => (credit.media_type === 'movie' || credit.media_type === 'tv') && (includeAdult || !credit.adult);
-
-    const addRole = (credit, role) => {
-        const key = `${credit.media_type}-${credit.id}`;
-        const date = credit.release_date || credit.first_air_date || '';
-        if (!byTitle.has(key)) {
-            byTitle.set(key, { raw: credit, date, roles: [] });
-        }
-        if (role && !byTitle.get(key).roles.includes(role)) byTitle.get(key).roles.push(role);
-    };
-
-    (combinedCredits?.cast || []).filter(allowed).forEach((credit) => {
-        const episodes = credit.media_type === 'tv' && credit.episode_count ? ` (${credit.episode_count} episode${credit.episode_count === 1 ? '' : 's'})` : '';
-        addRole(credit, credit.character ? `as ${credit.character}${episodes}` : '');
-    });
-    (combinedCredits?.crew || []).filter(allowed).forEach((credit) => addRole(credit, credit.job));
-
-    return [...byTitle.values()];
-}
-
 export async function getServerSideProps({ params, req }) {
     if (!/^\d+$/.test(params.id)) return { notFound: true };
 
     let data;
     try {
-        data = await tmdbGet(`/person/${params.id}`, { append_to_response: 'combined_credits' });
+        data = await getPersonWithCredits(params.id);
     } catch (error) {
         if (error.response?.status === 404) return { notFound: true };
         throw error;
@@ -173,24 +154,9 @@ export async function getServerSideProps({ params, req }) {
     const includeAdult = await allowsAdultContent(req.headers.cookie);
     if (data.adult && !includeAdult) return { notFound: true };
 
-    const entries = buildCredits(data.combined_credits, includeAdult);
-
-    // Newest first; titles without a date yet (announced projects) go to the top
-    const credits = [...entries]
-        .sort((a, b) => (b.date || '9999').localeCompare(a.date || '9999'))
-        .map(({ raw, date, roles }) => ({
-            id: raw.id,
-            type: raw.media_type,
-            title: raw.title || raw.name,
-            year: date.slice(0, 4) || null,
-            role: roles.join(', '),
-        }));
-
-    // Their best-known work: the credits with the most votes on TMDB
-    const knownForTitles = [...entries]
-        .sort((a, b) => (b.raw.vote_count || 0) - (a.raw.vote_count || 0))
-        .slice(0, 10)
-        .map(({ raw }) => toMediaCard(raw, raw.media_type));
+    const { credits, knownForTitles } = buildFilmography(data.combined_credits, includeAdult);
+    const movieCount = credits.filter((credit) => credit.type === 'movie').length;
+    const creditCounts = { all: credits.length, movie: movieCount, tv: credits.length - movieCount };
 
     const person = {
         id: data.id,
@@ -206,7 +172,9 @@ export async function getServerSideProps({ params, req }) {
             : null,
         placeOfBirth: data.place_of_birth || null,
         knownForTitles,
-        credits,
+        // Very long filmographies would make the page data heavy, so send only what's shown first
+        credits: credits.length > FULL_CREDITS_LIMIT ? credits.slice(0, INITIAL_COUNT) : credits,
+        creditCounts,
     };
 
     return { props: { person } };

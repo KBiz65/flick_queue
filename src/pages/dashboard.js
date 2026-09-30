@@ -3,7 +3,7 @@ import SeoHead from '../components/SeoHead';
 import Link from 'next/link';
 import pool from '@/lib/db';
 import { clearAuthCookie, hasAuthCookie } from '@/lib/auth';
-import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
+import { tmdbGetCached, TRENDING_TTL_MS, getViewerSettings, toMediaCard } from '@/lib/tmdb';
 import { getWatchlistSummaries } from '@/lib/watchlists';
 import Navbar from '../components/Navbar';
 import MediaRow from '../components/MediaRow';
@@ -86,7 +86,7 @@ const Dashboard = ({ firstName, watchlists, recommendations, trendingMovies, tre
 // Load one trending list; if TMDB is down, show an empty row instead of breaking the dashboard
 async function getTrending(type, includeAdult) {
   try {
-    const data = await tmdbGet(`/trending/${type}/week`);
+    const data = await tmdbGetCached(`/trending/${type}/week`, {}, TRENDING_TTL_MS);
     return data.results
       .filter((item) => includeAdult || !item.adult)
       .map((item) => toMediaCard(item, type));
@@ -114,7 +114,7 @@ async function getRecommendations(userId, includeAdult) {
   const perTitle = await Promise.all(
     saved.slice(0, 5).map(async (seed) => {
       try {
-        const data = await tmdbGet(`/${seed.type}/${seed.tmdb_id}/recommendations`);
+        const data = await tmdbGetCached(`/${seed.type}/${seed.tmdb_id}/recommendations`, {}, TRENDING_TTL_MS);
         return data.results
           .filter((item) => includeAdult || !item.adult)
           .map((item) => toMediaCard(item, seed.type));
@@ -158,11 +158,8 @@ export async function getServerSideProps({ req, res }) {
     };
   };
 
-  const { userId, includeAdult } = await getViewerSettings(req.headers.cookie);
+  const { userId, firstName, includeAdult } = await getViewerSettings(req.headers.cookie);
   if (!userId) return loginRedirect();
-
-  const { rows } = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
-  if (rows.length === 0) return loginRedirect();
 
   // Load everything at the same time
   const [watchlists, recommendations, trendingMovies, trendingTV] = await Promise.all([
@@ -174,7 +171,7 @@ export async function getServerSideProps({ req, res }) {
 
   return {
     props: {
-      firstName: rows[0].first_name,
+      firstName,
       watchlists,
       recommendations,
       trendingMovies,

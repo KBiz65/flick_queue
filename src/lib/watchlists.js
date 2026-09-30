@@ -49,7 +49,6 @@ export async function getWatchlistSummaries(userId, tmdbId = null, type = null) 
         `SELECT
             w.watchlist_id,
             w.name,
-            w.description,
             COUNT(wi.watchlist_item_id)::int AS item_count,
             COUNT(wi.watchlist_item_id) FILTER (WHERE wi.watched)::int AS watched_count,
             (ARRAY_AGG(m.poster_path ORDER BY wi.added_at DESC) FILTER (WHERE m.poster_path IS NOT NULL))[1:4] AS preview_posters,
@@ -63,8 +62,10 @@ export async function getWatchlistSummaries(userId, tmdbId = null, type = null) 
         [userId, tmdbId, type]
     );
 
+    // No description: nothing that shows summaries uses it, and the list page loads its own
     return rows.map((row) => ({
-        ...toWatchlistJson(row),
+        id: row.watchlist_id,
+        name: row.name,
         itemCount: row.item_count,
         watchedCount: row.watched_count,
         previewPosters: row.preview_posters || [],

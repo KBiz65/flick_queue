@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import axios from 'axios';
+import { Box, Button, CircularProgress, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
-const INITIAL_COUNT = 25;
+export const INITIAL_COUNT = 25;
 
 const FILTERS = {
     all: () => true,
@@ -10,15 +11,52 @@ const FILTERS = {
     tv: (credit) => credit.type === 'tv',
 };
 
-// Every credit for a person, newest first, filterable by movies or TV
-const Filmography = ({ credits }) => {
+// Every credit for a person, newest first, filterable by movies or TV.
+// For very long filmographies the page sends only the first few credits; the rest load when needed.
+const Filmography = ({ personId, credits, counts }) => {
     const [filter, setFilter] = useState('all');
     const [showAll, setShowAll] = useState(false);
+    const [fullCredits, setFullCredits] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadError, setLoadError] = useState('');
 
-    const filtered = credits.filter(FILTERS[filter]);
+    const loaded = fullCredits || credits;
+    const isComplete = loaded.length === counts.all;
+
+    const loadAll = async () => {
+        if (isComplete || isLoading) return true;
+        setIsLoading(true);
+        setLoadError('');
+        try {
+            const response = await axios.get(`/api/tmdb/person/${personId}/credits`);
+            setFullCredits(response.data.credits);
+            return true;
+        } catch {
+            setLoadError('Could not load the full filmography. Please try again.');
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // A movie or TV filter needs the whole list to be accurate
+    const handleFilterChange = (event, value) => {
+        if (!value) return;
+        setFilter(value);
+        if (value !== 'all') loadAll();
+    };
+
+    const handleToggleShowAll = async () => {
+        if (showAll) {
+            setShowAll(false);
+            return;
+        }
+        if (await loadAll()) setShowAll(true);
+    };
+
+    const filtered = loaded.filter(FILTERS[filter]);
     const visible = showAll ? filtered : filtered.slice(0, INITIAL_COUNT);
-    const movieCount = credits.filter(FILTERS.movie).length;
-    const tvCount = credits.length - movieCount;
+    const total = counts[filter];
 
     return (
         <Box>
@@ -26,12 +64,12 @@ const Filmography = ({ credits }) => {
                 exclusive
                 size="small"
                 value={filter}
-                onChange={(event, value) => value && setFilter(value)}
+                onChange={handleFilterChange}
                 aria-label="Filter credits"
             >
-                <ToggleButton value="all">All ({credits.length})</ToggleButton>
-                <ToggleButton value="movie">Movies ({movieCount})</ToggleButton>
-                <ToggleButton value="tv">TV ({tvCount})</ToggleButton>
+                <ToggleButton value="all">All ({counts.all})</ToggleButton>
+                <ToggleButton value="movie">Movies ({counts.movie})</ToggleButton>
+                <ToggleButton value="tv">TV ({counts.tv})</ToggleButton>
             </ToggleButtonGroup>
 
             <Box component="ol" sx={{ listStyle: 'none', mt: 2, maxWidth: 820 }}>
@@ -74,9 +112,17 @@ const Filmography = ({ credits }) => {
                 ))}
             </Box>
 
-            {filtered.length > INITIAL_COUNT && (
-                <Button onClick={() => setShowAll(!showAll)} sx={{ mt: 2 }}>
-                    {showAll ? 'Show fewer' : `Show all ${filtered.length}`}
+            {isLoading && visible.length < Math.min(total, INITIAL_COUNT) && <CircularProgress size={24} sx={{ mt: 2 }} />}
+
+            {loadError && (
+                <Typography color="error" sx={{ mt: 2 }}>
+                    {loadError}
+                </Typography>
+            )}
+
+            {total > INITIAL_COUNT && (
+                <Button onClick={handleToggleShowAll} disabled={isLoading} sx={{ mt: 2 }}>
+                    {showAll ? 'Show fewer' : `Show all ${total}`}
                 </Button>
             )}
         </Box>
