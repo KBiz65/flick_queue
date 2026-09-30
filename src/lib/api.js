@@ -1,3 +1,4 @@
+import { clearAuthCookie, hasAuthCookie } from './auth';
 import { getSessionUserId } from './session';
 
 export class ApiError extends Error {
@@ -65,6 +66,8 @@ export function createHandler(methods, { auth = true } = {}) {
         if (auth) {
             const userId = await getSessionUserId(req.headers.cookie);
             if (!userId) {
+                // A rejected cookie (expired, or from before a password change) is removed so it stops being sent
+                if (hasAuthCookie(req.headers.cookie)) clearAuthCookie(res);
                 return res.status(401).json({ message: 'Please log in to continue.' });
             }
             req.userId = userId;

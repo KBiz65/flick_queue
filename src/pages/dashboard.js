@@ -2,6 +2,7 @@ import React from 'react';
 import SeoHead from '../components/SeoHead';
 import Link from 'next/link';
 import pool from '@/lib/db';
+import { clearAuthCookie, hasAuthCookie } from '@/lib/auth';
 import { tmdbGet, getViewerSettings, toMediaCard } from '@/lib/tmdb';
 import { getWatchlistSummaries } from '@/lib/watchlists';
 import Navbar from '../components/Navbar';
@@ -143,19 +144,25 @@ async function getRecommendations(userId, includeAdult) {
   return recommendations.slice(0, 20);
 }
 
-export async function getServerSideProps({ req }) {
-  const loginRedirect = {
-    redirect: {
-      destination: '/?from=/dashboard',
-      permanent: false,
-    },
+export async function getServerSideProps({ req, res }) {
+  // proxy.js only checks the token's signature and sends signed-in visitors from / to here. If this page rejects
+  // the token (for example, after a password change on another device), the cookie has to be cleared,
+  // or / would send the visitor straight back and loop.
+  const loginRedirect = () => {
+    if (hasAuthCookie(req.headers.cookie)) clearAuthCookie(res);
+    return {
+      redirect: {
+        destination: '/?from=/dashboard',
+        permanent: false,
+      },
+    };
   };
 
   const { userId, includeAdult } = await getViewerSettings(req.headers.cookie);
-  if (!userId) return loginRedirect;
+  if (!userId) return loginRedirect();
 
   const { rows } = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
-  if (rows.length === 0) return loginRedirect;
+  if (rows.length === 0) return loginRedirect();
 
   // Load everything at the same time
   const [watchlists, recommendations, trendingMovies, trendingTV] = await Promise.all([

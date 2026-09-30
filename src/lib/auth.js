@@ -51,6 +51,10 @@ export function readSessionCookie(cookieHeader) {
     return readToken(cookies[AUTH_COOKIE]);
 }
 
+export function hasAuthCookie(cookieHeader) {
+    return Boolean(parse(cookieHeader || '')[AUTH_COOKIE]);
+}
+
 // Used only by proxy.js to decide redirects. Doesn't check token_version, so anything that trusts
 // the login must use getSessionUserId (lib/session.js) instead.
 export function verifyToken(token) {
